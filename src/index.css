@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", sans-serif;
+  --font-heading: "Poppins", sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", monospace;
+
+  /* Brand Violet Scale — School Edition (replaces CampusFlow's plum-*) */
+  --color-violet-50: #F5F3FF;
+  --color-violet-100: #EDE9FE;
+  --color-violet-200: #DDD6FE;
+  --color-violet-300: #C4B5FD;
+  --color-violet-400: #A78BFA;
+  --color-violet-500: #8B5CF6;
+  --color-violet-600: #7C3AED;
+  --color-violet-700: #6D28D9;
+  --color-violet-800: #5B21B6;
+  --color-violet-900: #4C1D95;
+  --color-violet-950: #3B0764;
+
+  /* Neutrals */
+  --color-ink-400: #9CA3AF;
+  --color-ink-500: #6B7280;
+  --color-ink-700: #4B5563;
+  --color-ink-900: #1E1B2E;
+  --color-cn-border: #E9E5F4;
+  --color-cn-border-strong: #DDD6FE;
+  --color-cn-surface: #FFFFFF;
+  --color-cn-bg: #F7F6FB;
+  --color-cn-bg-alt: #ECEAF4;
+
+  /* Semantic status colors */
+  --color-success-hex: #10B981;
+  --color-success-tint: #ECFDF5;
+  --color-warning-hex: #F59E0B;
+  --color-warning-tint: #FFFBEB;
+  --color-error-hex: #EF4444;
+  --color-error-tint: #FEF2F2;
+  --color-info-hex: #0891B2;
+  --color-info-tint: #ECFEFF;
+
+  /* Backwards compatibility bindings (used by a handful of shared components) */
+  --color-primary: #6D28D9;
+  --color-primary-dark: #4C1D95;
+  --color-secondary: #7C3AED;
+  --color-dark: #1E1B2E;
+  --color-light: #FFFFFF;
+  --color-divider: #E9E5F4;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-cn-bg);
+    color: var(--color-ink-900);
+  }
+}
+
+/* Custom premium scrollbar for sidebar and scroll views */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* Custom premium scrollbar for light backgrounds (tables/cards) */
+.custom-scrollbar-light::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+.custom-scrollbar-light::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar-light::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 9999px;
+}
+.custom-scrollbar-light::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* Animation utilities */
+@keyframes cn-shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+@keyframes cn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

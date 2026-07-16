@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 280" width="100%" height="100%">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&amp;display=swap');
+      .cf-title {
+        font-family: 'Poppins', 'Segoe UI', Roboto, sans-serif;
+        font-weight: 600;
+        font-size: 52px;
+        text-anchor: middle;
+      }
+      .cf-sub {
+        font-family: 'Poppins', 'Segoe UI', Roboto, sans-serif;
+        font-weight: 300;
+        font-size: 14px;
+        text-anchor: middle;
+        fill: #A78BFA;
+        letter-spacing: 3px;
+      }
+    </style>
+  </defs>
+
+  <!-- 1. Centered Graduation Cap -->
+  <g transform="translate(250, 78)">
+    <polygon points="0,-28 68,5 0,38 -68,5" fill="none" stroke="#A78BFA" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M -36,20 L -36,38 C -36,46 36,46 36,38 L 36,20" fill="none" stroke="#A78BFA" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 0,5 L -50,13 L -50,38" fill="none" stroke="#A78BFA" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M -55,38 L -45,38 L -45,50 C -45,53 -55,53 -55,50 Z" fill="#A78BFA"/>
+  </g>
+
+  <!-- 2. Wordmark -->
+  <text x="250" y="192" class="cf-title">
+    <tspan fill="#A78BFA">Campus</tspan><tspan fill="#FFFFFF">Nexus</tspan>
+  </text>
+
+  <!-- 3. Accent dot above 'N' — the connection point / nexus node -->
+  <circle cx="275" cy="155" r="5" fill="#A78BFA"/>
+
+  <!-- 4. Subtext -->
+  <text x="250" y="228" class="cf-sub">SCHOOL EDITION</text>
+</svg>
