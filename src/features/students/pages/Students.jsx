@@ -10,6 +10,8 @@ import studentService from "../services/studentService";
 import classSectionService from "../services/classSectionService";
 import guardianService from "../../guardians/services/guardianService";
 import ConsentModal from "../components/ConsentModal";
+import Pagination from "../../../components/Pagination";
+import usePaginatedList from "../../../hooks/usePaginatedList";
 
 // Field names below (full_name, date_of_birth, class_section, admission_number
 // on Student; full_name/phone/email/relationship on Guardian; student/guardian/
@@ -48,12 +50,21 @@ const Students = () => {
 
   const [view, setView] = useState("list"); // 'list' | 'enroll'
   const [isEditing, setIsEditing] = useState(false);
-  const [students, setStudents] = useState([]);
   const [classSections, setClassSections] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
+
+  const {
+    items: students,
+    page,
+    setPage,
+    totalPages,
+    count,
+    pageSize,
+    loading,
+    refetch: fetchStudents,
+  } = usePaginatedList(studentService.getStudents);
 
   const [form, setForm] = useState(emptyForm);
   const [guardianForm, setGuardianForm] = useState(emptyGuardianForm);
@@ -62,19 +73,6 @@ const Students = () => {
 
   const [consentStudent, setConsentStudent] = useState(null);
   const [guardianLinkCount, setGuardianLinkCount] = useState(null);
-
-  const fetchStudents = async () => {
-    setLoading(true);
-    try {
-      const res = await studentService.getStudents();
-      setStudents(asList(res.data));
-    } catch (err) {
-      console.error("Failed to fetch students:", err);
-      toast.error("Failed to load students.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const fetchClassSections = async () => {
     try {
@@ -95,7 +93,6 @@ const Students = () => {
   };
 
   useEffect(() => {
-    fetchStudents();
     fetchClassSections();
     fetchGuardianLinkCount();
   }, []);
@@ -112,6 +109,9 @@ const Students = () => {
     return cs ? classSectionLabel(cs) : "—";
   };
 
+  // Search only matches within the currently loaded page (the backend has
+  // no search filter on this endpoint) — this is a client-side narrowing of
+  // the visible 25 rows, not a roster-wide search.
   const filteredStudents = students.filter((s) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
@@ -304,7 +304,9 @@ const Students = () => {
     }
   };
 
-  const recentlyEnrolledCount = students.length;
+  // `count` is the true total across every page; `students` here is only the
+  // current page (25 rows), so face-pending is an on-page approximation.
+  const recentlyEnrolledCount = count;
   const pendingFaceCount = students.filter((s) => !s.is_face_registered).length;
 
   if (view === "enroll") {
@@ -576,6 +578,7 @@ const Students = () => {
         emptyMessage="No students enrolled yet"
         emptyDescription="Click “Enroll student” to add your first admission for this academic year."
       />
+      <Pagination page={page} totalPages={totalPages} count={count} pageSize={pageSize} onPageChange={setPage} loading={loading} />
 
       <ConsentModal isOpen={!!consentStudent} onClose={() => setConsentStudent(null)} student={consentStudent} />
     </div>

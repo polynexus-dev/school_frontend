@@ -196,9 +196,13 @@ const Login = () => {
                 />
                 Remember me
               </label>
-              <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-white transition">
+              <button
+                type="button"
+                onClick={() => navigate("/forgot-password")}
+                className="hover:text-white transition cursor-pointer"
+              >
                 Forgot password?
-              </a>
+              </button>
             </div>
 
             <button

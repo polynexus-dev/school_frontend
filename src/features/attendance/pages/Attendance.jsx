@@ -6,17 +6,15 @@ import Table from "../../../components/Table";
 import attendanceService from "../services/attendanceService";
 import useUser from "../../auth/hooks/useUser";
 import api from "../../../services/api";
+import Pagination from "../../../components/Pagination";
+import usePaginatedList from "../../../hooks/usePaginatedList";
 
 // Not one of the 5 School Edition design screens — kept intentionally light,
 // but still fully wired to the real GET/POST /api/attendance/ endpoints.
-const asList = (data) => (Array.isArray(data) ? data : data?.results || []);
-
 const emptyForm = { student: "", date: new Date().toISOString().slice(0, 10), status: "present" };
 
 const Attendance = () => {
   const { user } = useUser();
-  const [records, setRecords] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [children, setChildren] = useState([]);
@@ -25,22 +23,17 @@ const Attendance = () => {
   const profile = user?.data;
   const roleName = profile?.role || "Admin";
 
-  const fetchAttendance = async () => {
-    setLoading(true);
-    try {
-      const params = {};
-      if (roleName === "Parent" && selectedChildId) {
-        params.student = selectedChildId;
-      }
-      const res = await attendanceService.getAttendance(params);
-      setRecords(asList(res.data));
-    } catch (err) {
-      console.error("Failed to load attendance:", err);
-      toast.error("Failed to load attendance records.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const attendanceParams = roleName === "Parent" && selectedChildId ? { student: selectedChildId } : {};
+  const {
+    items: records,
+    page,
+    setPage,
+    totalPages,
+    count,
+    pageSize,
+    loading,
+    refetch: fetchAttendance,
+  } = usePaginatedList(attendanceService.getAttendance, attendanceParams);
 
   useEffect(() => {
     const fetchChildren = async () => {
@@ -59,12 +52,6 @@ const Attendance = () => {
     };
     fetchChildren();
   }, [roleName]);
-
-  useEffect(() => {
-    if (roleName !== "Parent" || selectedChildId) {
-      fetchAttendance();
-    }
-  }, [selectedChildId]);
 
   const columns = [
     { header: "Student", accessor: (row) => row.student_name || `Student #${row.student}` },
@@ -153,6 +140,7 @@ const Attendance = () => {
       )}
 
       <Table columns={columns} data={records} loading={loading} emptyMessage="No attendance records yet" />
+      <Pagination page={page} totalPages={totalPages} count={count} pageSize={pageSize} onPageChange={setPage} loading={loading} />
     </div>
   );
 };

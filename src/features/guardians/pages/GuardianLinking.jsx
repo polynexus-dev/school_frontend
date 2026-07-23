@@ -4,6 +4,8 @@ import { Search, Plus } from "lucide-react";
 import Button from "../../../components/Button";
 import BlackInputField from "../../../components/BlackInputField";
 import guardianService from "../services/guardianService";
+import Pagination from "../../../components/Pagination";
+import usePaginatedList from "../../../hooks/usePaginatedList";
 
 // Scaffold page — layout matches "Admin Web.dc.html" screen 4 (parent–student
 // linking manager). Pending requests + guardian search are wired to the real
@@ -21,8 +23,19 @@ const initialsOf = (name = "") =>
 const emptyNewLinkForm = { guardian_id: "", student_id: "", relationship: "Mother", is_primary: true };
 
 const GuardianLinking = () => {
-  const [links, setLinks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    items: rawLinks,
+    page,
+    setPage,
+    totalPages,
+    count,
+    pageSize,
+    loading,
+    refetch: fetchPendingLinks,
+  } = usePaginatedList(guardianService.getGuardianLinks, { status: "pending" });
+  // Defensive fallback in case the backend doesn't yet support ?status=
+  // filtering and just returns everything.
+  const links = rawLinks.filter((l) => !l.status || l.status === "pending");
   const [dismissedIds, setDismissedIds] = useState([]);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,27 +49,6 @@ const GuardianLinking = () => {
   const [showNewLinkForm, setShowNewLinkForm] = useState(false);
   const [newLinkForm, setNewLinkForm] = useState(emptyNewLinkForm);
   const [creatingLink, setCreatingLink] = useState(false);
-
-  const fetchPendingLinks = async () => {
-    setLoading(true);
-    try {
-      const res = await guardianService.getGuardianLinks({ status: "pending" });
-      let list = asList(res.data);
-      // Defensive fallback in case the backend doesn't yet support ?status=
-      // filtering and just returns everything.
-      list = list.filter((l) => !l.status || l.status === "pending");
-      setLinks(list);
-    } catch (err) {
-      console.error("Failed to load guardian links:", err);
-      toast.error("Failed to load pending guardian requests.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchPendingLinks();
-  }, []);
 
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -336,6 +328,7 @@ const GuardianLinking = () => {
             Every approval is logged with the admin's name and time once the approval endpoint is wired. Unlinking
             removes the parent's access instantly.
           </div>
+          <Pagination page={page} totalPages={totalPages} count={count} pageSize={pageSize} onPageChange={setPage} loading={loading} />
         </div>
 
         {/* Family detail */}

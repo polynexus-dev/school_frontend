@@ -4,16 +4,16 @@ import Button from "../../../components/Button";
 import SelectBox from "../../../components/SelectBox";
 import studentService from "../services/studentService";
 import classSectionService from "../services/classSectionService";
+import faceService from "../services/faceService";
+import Pagination from "../../../components/Pagination";
+import usePaginatedList from "../../../hooks/usePaginatedList";
 
-// Scaffold page — layout matches "Admin Web.dc.html" screen 2 closely.
-// The class roster + consent flags come from the real GET /api/students/ and
-// GET /api/class-sections/ endpoints, but there is no face-capture/enrollment
-// endpoint in the confirmed backend contract yet, so the capture panel below
-// only drives local UI state (angle chips, "captured" flag) plus a real
-// getUserMedia() webcam preview for visual authenticity.
-// TODO: wire capture + "Save & next student" to the real face-embedding
-// enrollment endpoint once it exists (see plan: face-registration is listed
-// as a stubbed backend endpoint for a follow-up pass).
+// Layout matches "Admin Web.dc.html" screen 2. Each angle click captures the
+// current webcam frame to a canvas and POSTs it to the real
+// POST /api/face-embeddings/register/ endpoint (multipart: student, angle,
+// image) — gated server-side on the student having a verified guardian's
+// face_recognition consent (403 if not). The backend flips
+// StudentProfile.is_face_registered once all 3 angles are registered.
 
 const ANGLES = ["front", "left", "right"];
 
@@ -25,13 +25,23 @@ const initialsOf = (name = "") =>
 const FaceRegistration = () => {
   const [classSections, setClassSections] = useState([]);
   const [selectedClass, setSelectedClass] = useState("");
-  const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    items: students,
+    page,
+    setPage,
+    totalPages,
+    count,
+    pageSize,
+    loading,
+    refetch: refetchStudents,
+  } = usePaginatedList(studentService.getStudents, { class_section: selectedClass || 0 });
   const [activeStudentId, setActiveStudentId] = useState(null);
   const [capturedAngles, setCapturedAngles] = useState({ front: false, left: false, right: false });
+  const [capturingAngle, setCapturingAngle] = useState(null);
   const [cameraError, setCameraError] = useState("");
 
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const streamRef = useRef(null);
 
   useEffect(() => {
@@ -49,25 +59,11 @@ const FaceRegistration = () => {
   }, []);
 
   useEffect(() => {
-    if (!selectedClass) return;
-    const loadStudents = async () => {
-      setLoading(true);
-      try {
-        const res = await studentService.getStudents({ class_section: selectedClass });
-        const list = asList(res.data);
-        setStudents(list);
-        const firstPending = list.find((s) => !s.is_face_registered);
-        setActiveStudentId(firstPending?.id ?? list[0]?.id ?? null);
-        setCapturedAngles({ front: false, left: false, right: false });
-      } catch (err) {
-        console.error("Failed to load students for class:", err);
-        toast.error("Failed to load class roster.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadStudents();
-  }, [selectedClass]);
+    const firstPending = students.find((s) => !s.is_face_registered);
+    setActiveStudentId(firstPending?.id ?? students[0]?.id ?? null);
+    setCapturedAngles({ front: false, left: false, right: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [students]);
 
   // Real webcam preview — purely cosmetic/UX, no frames are sent anywhere.
   useEffect(() => {
@@ -107,22 +103,52 @@ const FaceRegistration = () => {
   const doneCount = students.filter((s) => s.is_face_registered).length;
   const progressPct = students.length ? Math.round((doneCount / students.length) * 100) : 0;
 
-  const toggleAngle = (angle) => {
-    setCapturedAngles((prev) => ({ ...prev, [angle]: !prev[angle] }));
+  const captureFrameBlob = () =>
+    new Promise((resolve, reject) => {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      if (!video || !canvas || !video.videoWidth) {
+        reject(new Error("Camera isn't ready yet."));
+        return;
+      }
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Failed to capture frame."))), "image/jpeg", 0.92);
+    });
+
+  const captureAngle = async (angle) => {
+    if (!activeStudent || capturingAngle) return;
+    setCapturingAngle(angle);
+    try {
+      const imageBlob = await captureFrameBlob();
+      await faceService.registerFace({ studentId: activeStudent.id, angle, imageBlob });
+      setCapturedAngles((prev) => ({ ...prev, [angle]: true }));
+      toast.success(`${angle} angle captured for ${activeStudent.full_name || activeStudent.name}.`);
+    } catch (err) {
+      console.error(`Failed to register ${angle} angle:`, err);
+      toast.error(err?.response?.data?.error || `Failed to capture ${angle} angle.`);
+    } finally {
+      setCapturingAngle(null);
+    }
   };
 
-  const handleSaveAndNext = () => {
+  const handleSaveAndNext = async () => {
+    if (!activeStudent || !allAnglesCaptured) return;
+    // Roster refetch picks up the server's updated is_face_registered flag
+    // and the [students] effect below auto-selects the next pending student.
+    await refetchStudents();
+  };
+
+  const handleSkip = () => {
     if (!activeStudent) return;
-    // TODO: POST the 3 captured angle embeddings to the face-enrollment
-    // endpoint once it exists; for now this only advances the local queue.
-    toast.success(
-      `Captured angles saved locally for ${activeStudent.full_name || activeStudent.name} (not yet sent to backend — no endpoint in contract).`
-    );
     const idx = students.findIndex((s) => s.id === activeStudent.id);
     const next = students.slice(idx + 1).find((s) => !s.is_face_registered);
     setActiveStudentId(next?.id ?? null);
     setCapturedAngles({ front: false, left: false, right: false });
   };
+
+  const allAnglesCaptured = ANGLES.every((a) => capturedAngles[a]);
 
   const statusFor = (student) => {
     if (student.is_face_registered) return { label: "DONE", tone: "done" };
@@ -192,26 +218,44 @@ const FaceRegistration = () => {
                 )}
               </div>
 
+              <canvas ref={canvasRef} className="hidden" />
+
               <div className="flex gap-2.5">
                 {ANGLES.map((angle) => (
                   <button
                     key={angle}
                     type="button"
-                    onClick={() => toggleAngle(angle)}
-                    className={`flex-1 rounded-xl py-2.5 text-center text-[11px] font-extrabold uppercase transition cursor-pointer ${
+                    disabled={!!capturingAngle || !!cameraError}
+                    onClick={() => captureAngle(angle)}
+                    className={`flex-1 rounded-xl py-2.5 text-center text-[11px] font-extrabold uppercase transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                       capturedAngles[angle]
                         ? "bg-emerald-500/15 border border-emerald-400/50 text-emerald-300"
                         : "bg-white/5 border border-white/10 text-white/50"
                     }`}
                   >
-                    {angle} {capturedAngles[angle] ? "✓" : ""}
+                    {capturingAngle === angle ? "Capturing…" : `${angle} ${capturedAngles[angle] ? "✓" : ""}`}
                   </button>
                 ))}
               </div>
 
-              <Button variant="success" size="normal" className="h-[50px] font-heading text-[14.5px]" onClick={handleSaveAndNext}>
-                Save &amp; next student →
+              <Button
+                variant="success"
+                size="normal"
+                className="h-[50px] font-heading text-[14.5px]"
+                onClick={handleSaveAndNext}
+                disabled={!allAnglesCaptured}
+              >
+                {allAnglesCaptured ? "Save & next student →" : `Capture all 3 angles first (${ANGLES.filter((a) => capturedAngles[a]).length}/3)`}
               </Button>
+              {!allAnglesCaptured && (
+                <button
+                  type="button"
+                  onClick={handleSkip}
+                  className="text-[12px] text-white/50 hover:text-white/80 underline underline-offset-2 cursor-pointer self-center"
+                >
+                  Skip this student for now
+                </button>
+              )}
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center text-white/50 text-sm text-center py-16">
@@ -278,6 +322,7 @@ const FaceRegistration = () => {
               <div className="text-center text-ink-400 text-sm py-8">No students in this class yet.</div>
             )}
           </div>
+          <Pagination page={page} totalPages={totalPages} count={count} pageSize={pageSize} onPageChange={setPage} loading={loading} />
 
           <div className="bg-violet-50 rounded-xl p-3 text-[12px] text-violet-900 leading-relaxed mt-auto">
             Face templates are encrypted on-device and deleted automatically if consent is withdrawn.

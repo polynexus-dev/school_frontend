@@ -12,6 +12,7 @@ import {
   Bus,
   Wallet,
   Megaphone,
+  Bell,
   Settings as SettingsIcon,
 } from "lucide-react";
 
@@ -28,6 +29,7 @@ const navItems = [
   { label: "Transport", path: "/transport", icon: <Bus size={17} /> },
   { label: "Fees", path: "/fees", icon: <Wallet size={17} /> },
   { label: "Announcements", path: "/announcements", icon: <Megaphone size={17} /> },
+  { label: "Notifications", path: "/notifications", icon: <Bell size={17} /> },
   { label: "Settings", path: "/settings", icon: <SettingsIcon size={17} /> },
 ];
 
@@ -75,13 +77,13 @@ const Sidebar = ({ onClose }) => {
           {navItems
             .filter((item) => {
               if (roleName === "Parent") {
-                return ["Dashboard", "Attendance", "Transport", "Fees", "Announcements"].includes(item.label);
+                return ["Dashboard", "Attendance", "Transport", "Fees", "Announcements", "Notifications"].includes(item.label);
               }
               if (roleName === "Teacher") {
-                return ["Dashboard", "Students", "Attendance", "Transport", "Announcements"].includes(item.label);
+                return ["Dashboard", "Students", "Attendance", "Transport", "Announcements", "Notifications"].includes(item.label);
               }
               if (roleName === "Conductor") {
-                return ["Dashboard", "Transport", "Announcements"].includes(item.label);
+                return ["Dashboard", "Transport", "Announcements", "Notifications"].includes(item.label);
               }
               return true; // School Admin, Management, Admin, SaaS Admin
             })
