@@ -44,6 +44,8 @@ import StaffAttendance from "../features/hr/pages/StaffAttendance";
 import StudentProgress from "../features/students/pages/StudentProgress";
 
 import ParentFeedback from "../features/feedback/pages/ParentFeedback";
+import SyllabusProgress from "../features/academics/pages/SyllabusProgress";
+import StudyNotes from "../features/notes/pages/StudyNotes";
 
 const AppRoutes = () => {
   return (
@@ -64,7 +66,9 @@ const AppRoutes = () => {
             <Route path="students/promote-class" element={<PromoteClass />} />
             <Route path="students/:id/progress" element={<StudentProgress />} />
 
-            {/* Paper Setting from Syllabus */}
+            {/* Paper Setting, Syllabus Progress & Study Notes */}
+            <Route path="study-notes" element={<StudyNotes />} />
+            <Route path="syllabus-progress" element={<SyllabusProgress />} />
             <Route path="paper-setting" element={<ExamPapers />} />
             <Route path="paper-setting/syllabus-topics" element={<SyllabusTopics />} />
             <Route path="paper-setting/question-bank" element={<QuestionBank />} />
@@ -88,6 +92,8 @@ const AppRoutes = () => {
             <Route path="feedback" element={<ParentFeedback />} />
             <Route path="hr/leave" element={<LeaveRequests />} />
             <Route path="hr/attendance" element={<StaffAttendance />} />
+
+
 
 
             <Route path="parents-linking" element={<GuardianLinking />} />

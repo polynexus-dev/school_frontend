@@ -16,6 +16,7 @@ import {
   Settings as SettingsIcon,
   ClipboardList,
   BookOpen,
+  BookCheck,
   CalendarDays,
   ClipboardCheck,
   UserCheck,
@@ -42,8 +43,12 @@ import {
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: <LayoutDashboard size={17} /> },
   { label: "Students", path: "/students", icon: <GraduationCap size={17} />, matchPrefix: true },
+  { label: "Syllabus Progress", path: "/syllabus-progress", icon: <BookCheck size={17} /> },
+  { label: "Study Notes", path: "/study-notes", icon: <FileText size={17} /> },
   { label: "Paper Setting", path: "/paper-setting", icon: <ClipboardList size={17} />, matchPrefix: true },
   { label: "Homework", path: "/homework", icon: <BookOpen size={17} /> },
+
+
   { label: "Timetable", path: "/timetable", icon: <CalendarDays size={17} /> },
   { label: "Report Cards", path: "/report-cards", icon: <FileText size={17} /> },
   { label: "Messages", path: "/messages", icon: <MessageSquare size={17} /> },
