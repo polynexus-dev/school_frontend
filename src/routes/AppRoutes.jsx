@@ -43,6 +43,8 @@ import LeaveRequests from "../features/hr/pages/LeaveRequests";
 import StaffAttendance from "../features/hr/pages/StaffAttendance";
 import StudentProgress from "../features/students/pages/StudentProgress";
 
+import ParentFeedback from "../features/feedback/pages/ParentFeedback";
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -83,8 +85,10 @@ const AppRoutes = () => {
             <Route path="certificates" element={<Certificates />} />
             <Route path="inventory" element={<Inventory />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="feedback" element={<ParentFeedback />} />
             <Route path="hr/leave" element={<LeaveRequests />} />
             <Route path="hr/attendance" element={<StaffAttendance />} />
+
 
             <Route path="parents-linking" element={<GuardianLinking />} />
             <Route path="attendance" element={<Attendance />} />

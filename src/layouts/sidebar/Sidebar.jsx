@@ -21,6 +21,7 @@ import {
   UserCheck,
   FileText,
   MessageSquare,
+  MessageSquareWarning,
   CalendarClock,
   Building2,
   Library as LibraryIcon,
@@ -46,6 +47,7 @@ const navItems = [
   { label: "Timetable", path: "/timetable", icon: <CalendarDays size={17} /> },
   { label: "Report Cards", path: "/report-cards", icon: <FileText size={17} /> },
   { label: "Messages", path: "/messages", icon: <MessageSquare size={17} /> },
+  { label: "Principal Feedback", path: "/feedback", icon: <MessageSquareWarning size={17} /> },
   { label: "PTM", path: "/ptm", icon: <CalendarClock size={17} /> },
   { label: "Library", path: "/library", icon: <LibraryIcon size={17} /> },
   { label: "Hostel", path: "/hostel", icon: <Hotel size={17} /> },
@@ -102,7 +104,7 @@ const Sidebar = ({ onClose }) => {
               VD
             </div>
             <div className="min-w-0">
-              <div className="font-heading font-bold text-[14.5px] truncate">VIDYUM</div>
+              <div className="font-heading font-bold text-[14.5px] truncate">VIDYAM</div>
               <div className="text-white/50 text-[10.5px] font-semibold tracking-[0.06em]">SCHOOL EDITION</div>
             </div>
           </div>

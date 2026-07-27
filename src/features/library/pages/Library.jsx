@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Plus, BookOpen, Undo2 } from "lucide-react";
+import { Plus, BookOpen, Undo2, User, ExternalLink } from "lucide-react";
 import Button from "../../../components/Button";
 import Table from "../../../components/Table";
 import Modal from "../../../components/Modal";
@@ -17,6 +18,7 @@ const emptyBookForm = { title: "", author: "", isbn: "", publisher: "", category
 const emptyIssueForm = { book: "", class_section: "", student: "", accession_number: "", due_date: "" };
 
 const Library = () => {
+  const navigate = useNavigate();
   const { user } = useUser();
   const roleName = user?.data?.role || "Admin";
   const isAdmin = !["Teacher", "Parent", "Conductor"].includes(roleName);
@@ -47,6 +49,30 @@ const Library = () => {
   const [classSections, setClassSections] = useState([]);
   const [saving, setSaving] = useState(false);
   const [actingId, setActingId] = useState(null);
+
+  // Student Profile Quick View Modal
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [loadingStudent, setLoadingStudent] = useState(false);
+
+  const openStudentProfile = async (studentId, fallbackName = "") => {
+    if (!studentId) {
+      toast.info(`Borrower: ${fallbackName}`);
+      return;
+    }
+    setShowProfileModal(true);
+    setLoadingStudent(true);
+    setSelectedStudent(null);
+    try {
+      const res = await studentService.getStudent(studentId);
+      setSelectedStudent(res.data);
+    } catch (err) {
+      console.error("Failed to load student profile:", err);
+      toast.error("Failed to load student profile.");
+    } finally {
+      setLoadingStudent(false);
+    }
+  };
 
   const loadBooks = async (q) => {
     setLoadingBooks(true);
@@ -239,7 +265,18 @@ const Library = () => {
 
   const issueColumns = [
     { header: "Book", accessor: "book_title" },
-    { header: "Borrower", accessor: "borrower_name" },
+    {
+      header: "Borrower",
+      accessor: (row) => (
+        <button
+          type="button"
+          onClick={() => openStudentProfile(row.student_id, row.borrower_name)}
+          className="font-bold text-violet-700 hover:text-violet-900 hover:underline cursor-pointer text-left inline-flex items-center gap-1"
+        >
+          {row.borrower_name}
+        </button>
+      ),
+    },
     { header: "Issued", accessor: "issued_date" },
     { header: "Due", accessor: "due_date" },
     {
@@ -312,6 +349,7 @@ const Library = () => {
         </>
       )}
 
+      {/* Add Book Modal */}
       <Modal isOpen={showBookModal} onClose={() => setShowBookModal(false)} title="Add book">
         <div className="flex flex-col gap-3 w-[360px] max-w-full">
           <BlackInputField label="Title" fieldName="title" value={bookForm.title} onChange={(e) => setBookForm((p) => ({ ...p, title: e.target.value }))} required />
@@ -332,14 +370,52 @@ const Library = () => {
         </div>
       </Modal>
 
+      {/* Copies Modal */}
       <Modal isOpen={!!copiesBook} onClose={() => setCopiesBook(null)} title={`Copies — ${copiesBook?.title || ""}`}>
-        <div className="flex flex-col gap-3 w-[360px] max-w-full">
-          <div className="flex flex-col gap-1.5 max-h-56 overflow-y-auto">
-            {copies.length === 0 && <p className="text-ink-400 text-[13px] py-2 text-center">No copies yet.</p>}
+        <div className="flex flex-col gap-3 w-[400px] max-w-full">
+          <div className="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1">
+            {copies.length === 0 && <p className="text-ink-400 text-[13px] py-3 text-center">No copies registered yet.</p>}
             {copies.map((c) => (
-              <div key={c.id} className="flex items-center justify-between border border-cn-border rounded-lg px-3 py-2">
-                <span className="text-[13px] font-semibold text-ink-900">{c.accession_number}</span>
-                <span className={`text-[11px] font-bold uppercase ${c.status === "available" ? "text-success-hex" : "text-ink-400"}`}>{c.status}</span>
+              <div key={c.id} className="flex flex-col border border-cn-border rounded-xl p-3 bg-white gap-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[13px] font-bold text-violet-950">{c.accession_number}</span>
+                  <span
+                    className={`text-[11px] font-bold uppercase rounded-full px-2.5 py-0.5 ${
+                      c.status === "available"
+                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                        : c.current_issue?.is_overdue
+                        ? "bg-rose-50 text-rose-700 border border-rose-200"
+                        : "bg-amber-50 text-amber-700 border border-amber-200"
+                    }`}
+                  >
+                    {c.status === "available"
+                      ? "AVAILABLE"
+                      : c.current_issue?.is_overdue
+                      ? `OVERDUE (${c.current_issue.days_overdue}d)`
+                      : "ISSUED"}
+                  </span>
+                </div>
+
+                {c.status === "issued" && c.current_issue && (
+                  <div className="text-[12px] bg-violet-50/50 rounded-lg p-2.5 mt-0.5 border border-violet-100/80 flex flex-col gap-1">
+                    <div className="flex items-center justify-between text-ink-700">
+                      <span className="text-ink-500 font-medium text-[11.5px]">Issued to:</span>
+                      <button
+                        type="button"
+                        onClick={() => openStudentProfile(c.current_issue.student_id, c.current_issue.borrower_name)}
+                        className="font-bold text-violet-700 hover:text-violet-900 hover:underline cursor-pointer text-right"
+                      >
+                        {c.current_issue.borrower_name}
+                      </button>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-ink-500">Issued on: {c.current_issue.issued_date}</span>
+                      <span className={c.current_issue.is_overdue ? "text-rose-600 font-bold" : "text-ink-600 font-medium"}>
+                        Due: {c.current_issue.due_date}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -354,6 +430,7 @@ const Library = () => {
         </div>
       </Modal>
 
+      {/* Issue Modal */}
       <Modal isOpen={showIssueModal} onClose={() => setShowIssueModal(false)} title="Issue a book">
         <div className="flex flex-col gap-3 w-[340px] max-w-full">
           <SelectBox label="Book" fieldName="book" value={issueForm.book} onChange={(e) => { setIssueForm((p) => ({ ...p, book: e.target.value, accession_number: "" })); handleBookChangeForIssue(e.target.value); }} options={bookOptionsForIssue} />
@@ -381,6 +458,90 @@ const Library = () => {
               Issue
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      {/* Student Profile Quick View Modal */}
+      <Modal isOpen={showProfileModal} onClose={() => setShowProfileModal(false)} title="Student Profile">
+        <div className="flex flex-col gap-4 w-[420px] max-w-full">
+          {loadingStudent ? (
+            <div className="py-8 text-center text-ink-500 text-sm">Loading student profile…</div>
+          ) : selectedStudent ? (
+            <div className="flex flex-col gap-4">
+              {/* Card Header */}
+              <div className="flex items-center gap-3.5 bg-violet-50/60 p-4 rounded-xl border border-violet-100">
+                <div className="w-12 h-12 rounded-full bg-violet-700 text-white font-extrabold text-lg flex items-center justify-center shadow-xs shrink-0">
+                  {(selectedStudent.full_name || selectedStudent.name || "S").charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-heading font-bold text-base text-violet-950 truncate">
+                      {selectedStudent.full_name || selectedStudent.name}
+                    </h3>
+                    <span className="text-[10.5px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      {selectedStudent.status || "Active"}
+                    </span>
+                  </div>
+                  <p className="text-[12.5px] text-violet-800 font-medium mt-0.5">
+                    Admission No: <span className="font-bold">{selectedStudent.admission_number || selectedStudent.admission_no || "—"}</span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Info Grid */}
+              <div className="grid grid-cols-2 gap-3 text-[12.5px]">
+                <div className="bg-cn-surface border border-cn-border rounded-xl p-3 flex flex-col gap-1">
+                  <span className="text-ink-400 text-[11px] font-semibold uppercase">Class & Section</span>
+                  <span className="font-bold text-ink-900">{selectedStudent.class_section_name || `Class ${selectedStudent.class_section}`}</span>
+                </div>
+
+                <div className="bg-cn-surface border border-cn-border rounded-xl p-3 flex flex-col gap-1">
+                  <span className="text-ink-400 text-[11px] font-semibold uppercase">Roll Number</span>
+                  <span className="font-bold text-ink-900">{selectedStudent.roll_number || "—"}</span>
+                </div>
+
+                <div className="bg-cn-surface border border-cn-border rounded-xl p-3 flex flex-col gap-1">
+                  <span className="text-ink-400 text-[11px] font-semibold uppercase">Gender & DOB</span>
+                  <span className="font-bold text-ink-900">
+                    {selectedStudent.gender || "—"} • {selectedStudent.date_of_birth || "—"}
+                  </span>
+                </div>
+
+                <div className="bg-cn-surface border border-cn-border rounded-xl p-3 flex flex-col gap-1">
+                  <span className="text-ink-400 text-[11px] font-semibold uppercase">Blood Group</span>
+                  <span className="font-bold text-ink-900">{selectedStudent.blood_group || "—"}</span>
+                </div>
+              </div>
+
+              {/* Location / City */}
+              {(selectedStudent.current_city || selectedStudent.current_state) && (
+                <div className="bg-cn-surface border border-cn-border rounded-xl p-3 flex flex-col gap-1 text-[12.5px]">
+                  <span className="text-ink-400 text-[11px] font-semibold uppercase">Location</span>
+                  <span className="font-bold text-ink-900">
+                    {[selectedStudent.current_city, selectedStudent.current_state, selectedStudent.current_pincode].filter(Boolean).join(", ")}
+                  </span>
+                </div>
+              )}
+
+              {/* Action Button */}
+              <div className="flex justify-end gap-2 pt-2 border-t border-cn-border">
+                <Button variant="outline" onClick={() => setShowProfileModal(false)}>
+                  Close
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setShowProfileModal(false);
+                    navigate(`/students/${selectedStudent.id}/progress`);
+                  }}
+                >
+                  View Academic Progress →
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="py-6 text-center text-ink-500 text-sm">No profile data found.</div>
+          )}
         </div>
       </Modal>
     </div>

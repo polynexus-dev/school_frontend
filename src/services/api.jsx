@@ -1,11 +1,27 @@
 import axios from "axios";
 
-// Simpler than the CampusFlow (college) frontend's api.jsx on purpose: this
-// product doesn't need the tenant-subdomain/nip.io host-rewriting dance yet
-// (see the plan doc) — just a plain VITE_API_URL base. Add that complexity
-// back if/when School Edition needs tenant subdomains from the browser.
-export const getBaseURL = () =>
-  import.meta.env.VITE_API_URL || "http://localhost:8000/api/";
+// Automatically extracts tenant schema from subdomain (e.g. demo.localhost or demo.vidyam.in)
+export const getSubdomainTenant = () => {
+  if (typeof window === "undefined" || !window.location.hostname) return null;
+  const parts = window.location.hostname.split(".");
+  // Handles demo.localhost:5173 or demo.school.com
+  if (parts.length > 1) {
+    const sub = parts[0].toLowerCase();
+    if (!["www", "app", "localhost", "127"].includes(sub)) {
+      return sub;
+    }
+  }
+  return null;
+};
+
+export const getBaseURL = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && !envUrl.includes("127.0.0.1") && !envUrl.includes("localhost")) {
+    return envUrl;
+  }
+  const hostname = typeof window !== "undefined" && window.location.hostname ? window.location.hostname : "127.0.0.1";
+  return `http://${hostname}:8000/api/`;
+};
 
 const api = axios.create({
   baseURL: getBaseURL(),
@@ -22,7 +38,9 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
-  const tenantSchema = localStorage.getItem("tenantSchema");
+  // Priority 1: Subdomain (e.g. demo.localhost / demo.vidyam.in)
+  // Priority 2: Stored tenant schema from login
+  const tenantSchema = getSubdomainTenant() || localStorage.getItem("tenantSchema");
   if (tenantSchema) {
     config.headers["X-Tenant"] = tenantSchema;
   }
@@ -30,6 +48,7 @@ api.interceptors.request.use((config) => {
   config.baseURL = getBaseURL();
   return config;
 });
+
 
 // Silent-refresh-once-on-401. JWT access tokens are short-lived, so without
 // this every dropped token would boot the admin back to /login mid-task.

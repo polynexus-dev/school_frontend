@@ -91,7 +91,7 @@ const Login = () => {
               Enterprise Suite
             </div>
             <div className="mt-3 font-heading font-bold text-base text-white">
-              VIDYUM
+              VIDYAM
             </div>
           </div>
           <a
@@ -122,7 +122,7 @@ const Login = () => {
       <div className="w-full md:w-1/2 flex flex-col justify-between p-8 sm:p-16 md:p-20 bg-[#1B1723] overflow-y-auto h-full">
         <div className="flex-grow flex flex-col justify-center max-w-[420px] w-full mx-auto">
           <div className="flex flex-col items-center mb-2">
-            <img src={Logo} alt="VIDYUM" className="h-[74px] w-auto" />
+            <img src={Logo} alt="VIDYAM" className="h-[74px] w-auto" />
             <div className="text-[9px] font-extrabold tracking-[0.22em] text-violet-400 mt-1.5">
               POWERED BY POLYNEXUS
             </div>
@@ -216,7 +216,7 @@ const Login = () => {
         </div>
 
         <div className="text-center text-[12.5px] text-white/40 mt-8">
-          &copy; {new Date().getFullYear()} VIDYUM. A product of{" "}
+          &copy; {new Date().getFullYear()} VIDYAM. A product of{" "}
           <a
             href="https://polynexus.in"
             target="_blank"
