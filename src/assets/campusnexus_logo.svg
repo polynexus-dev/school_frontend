@@ -29,12 +29,9 @@
 
   <!-- 2. Wordmark -->
   <text x="250" y="192" class="cf-title">
-    <tspan fill="#A78BFA">Campus</tspan><tspan fill="#FFFFFF">Nexus</tspan>
+    <tspan fill="#FFFFFF" letter-spacing="2">VIDYUM</tspan>
   </text>
 
-  <!-- 3. Accent dot above 'N' — the connection point / nexus node -->
-  <circle cx="275" cy="155" r="5" fill="#A78BFA"/>
-
-  <!-- 4. Subtext -->
+  <!-- 3. Subtext -->
   <text x="250" y="228" class="cf-sub">SCHOOL EDITION</text>
 </svg>

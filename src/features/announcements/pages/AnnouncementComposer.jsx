@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import Button from "../../../components/Button";
+import Modal from "../../../components/Modal";
 import announcementService from "../services/announcementService";
 import classSectionService from "../../students/services/classSectionService";
+import useUser from "../../auth/hooks/useUser";
 
 // Layout matches "Admin Web.dc.html" screen 6 (announcement composer).
 // Publishing is fully wired to POST /api/announcements/ and the recent list
@@ -22,13 +24,29 @@ const MOCK_ROUTES = [
 
 const asList = (data) => (Array.isArray(data) ? data : data?.results || []);
 
+const timeAgo = (iso) => {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const hours = Math.floor(diffMs / 3600000);
+  if (hours < 1) return "just now";
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+};
+
 const AnnouncementComposer = () => {
+  const { user } = useUser();
+  const roleName = user?.data?.role || "Admin";
+  const isStaff = !["Parent", "Student"].includes(roleName);
+
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("General");
   const [message, setMessage] = useState("");
   const [schedule, setSchedule] = useState("now");
   const [translate, setTranslate] = useState(true);
   const [pushEnabled, setPushEnabled] = useState(true);
+  const [requiresAck, setRequiresAck] = useState(false);
+  const [ackingId, setAckingId] = useState(null);
+  const [rosterFor, setRosterFor] = useState(null);
+  const [roster, setRoster] = useState(null);
 
   const [audienceType, setAudienceType] = useState("whole_school"); // whole_school | class | bus_route | teachers
   const [classSections, setClassSections] = useState([]);
@@ -41,27 +59,59 @@ const AnnouncementComposer = () => {
   const [loadingRecent, setLoadingRecent] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await classSectionService.getClassSections();
-        setClassSections(asList(res.data));
-      } catch (err) {
-        console.error("Failed to load class sections:", err);
-      }
-    };
-    load();
+    if (isStaff) {
+      const load = async () => {
+        try {
+          const res = await classSectionService.getClassSections();
+          setClassSections(asList(res.data));
+        } catch (err) {
+          console.error("Failed to load class sections:", err);
+        }
+      };
+      load();
+    }
     fetchRecent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchRecent = async () => {
     setLoadingRecent(true);
     try {
       const res = await announcementService.getAnnouncements();
-      setRecent(asList(res.data).slice(0, 5));
+      const list = asList(res.data);
+      // Staff get a short "recently sent" strip alongside the composer;
+      // Parent/Student get the full feed since it's the whole page for them.
+      setRecent(isStaff ? list.slice(0, 8) : list);
     } catch (err) {
       console.error("Failed to load recent announcements:", err);
     } finally {
       setLoadingRecent(false);
+    }
+  };
+
+  const handleAcknowledge = async (announcement) => {
+    setAckingId(announcement.id);
+    try {
+      await announcementService.acknowledgeAnnouncement(announcement.id);
+      toast.success("Acknowledged.");
+      fetchRecent();
+    } catch (err) {
+      console.error("Failed to acknowledge:", err);
+      toast.error("Failed to acknowledge.");
+    } finally {
+      setAckingId(null);
+    }
+  };
+
+  const openRoster = async (announcement) => {
+    setRosterFor(announcement);
+    setRoster(null);
+    try {
+      const res = await announcementService.getAcknowledgments(announcement.id);
+      setRoster(res.data);
+    } catch (err) {
+      console.error("Failed to load acknowledgment roster:", err);
+      toast.error("Failed to load who has acknowledged.");
     }
   };
 
@@ -93,6 +143,7 @@ const AnnouncementComposer = () => {
     setSelectedClassIds([]);
     setSelectedRouteIds([]);
     setIncludeTeachers(false);
+    setRequiresAck(false);
   };
 
   const handlePublish = async () => {
@@ -102,16 +153,18 @@ const AnnouncementComposer = () => {
     }
     setPublishing(true);
     try {
+      // Field names below match Announcement's actual model fields
+      // (school_app/models/announcements.py) — the serializer 400s on
+      // "message"/"class_sections", which is what this used to send.
+      // category/include_teachers/translate/schedule have no backing model
+      // field yet, so they're UI-only for now (harmlessly ignored server-side).
       await announcementService.createAnnouncement({
         title,
-        message,
-        category,
+        content: message,
         audience_type: audienceType,
-        class_sections: audienceType === "class" ? selectedClassIds : [],
-        include_teachers: includeTeachers,
+        target_class_sections: audienceType === "class" ? selectedClassIds : [],
         push_notification: pushEnabled,
-        translate,
-        schedule,
+        requires_acknowledgment: requiresAck,
       });
       toast.success("Announcement published.");
       resetForm();
@@ -123,6 +176,54 @@ const AnnouncementComposer = () => {
       setPublishing(false);
     }
   };
+
+  if (!isStaff) {
+    return (
+      <div className="w-full">
+        <div className="pb-4 border-b border-cn-border mb-6">
+          <h1 className="font-heading font-bold text-2xl text-violet-950">Announcements</h1>
+          <p className="text-ink-500 text-[13px] mt-1">School and class notices</p>
+        </div>
+
+        {loadingRecent && <div className="text-ink-400 text-sm">Loading…</div>}
+        {!loadingRecent && recent.length === 0 && (
+          <div className="bg-cn-surface border border-cn-border rounded-2xl p-8 text-center text-ink-400 text-sm">No announcements yet.</div>
+        )}
+
+        <div className="flex flex-col gap-3">
+          {recent.map((a) => (
+            <div key={a.id} className="bg-cn-surface border border-cn-border rounded-2xl p-5">
+              <div className="flex items-center gap-2.5 flex-wrap mb-2">
+                {a.requires_acknowledgment && (
+                  <span className="text-[10px] font-bold rounded-full px-2 py-0.5 bg-warning-tint text-warning-hex">CIRCULAR</span>
+                )}
+                <span className="flex-1" />
+                <span className="text-[11.5px] text-ink-400">{a.author_name || "School"} · {timeAgo(a.created_at)}</span>
+              </div>
+              <div className="font-heading font-semibold text-[14.5px] text-ink-900">{a.title}</div>
+              <p className="text-[13px] text-ink-500 mt-1.5 leading-relaxed">{a.content}</p>
+              {a.requires_acknowledgment && (
+                <div className="mt-3">
+                  {a.my_acknowledged ? (
+                    <span className="text-[12px] font-semibold text-success-hex">✓ Acknowledged</span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleAcknowledge(a)}
+                      disabled={ackingId === a.id}
+                      className="text-[12px] font-bold text-violet-700 hover:underline cursor-pointer"
+                    >
+                      Acknowledge
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -231,17 +332,49 @@ const AnnouncementComposer = () => {
             </div>
           </div>
 
+          {isStaff && (
+            <label className="bg-cn-surface border border-cn-border rounded-2xl px-4 py-3.5 flex items-center gap-3 cursor-pointer">
+              <input type="checkbox" checked={requiresAck} onChange={(e) => setRequiresAck(e.target.checked)} className="w-4 h-4" />
+              <div className="text-[12.5px] text-ink-700 leading-relaxed">
+                <b>Requires acknowledgment</b> — makes this a circular. Recipients must explicitly confirm they've read it, and you'll see who has.
+              </div>
+            </label>
+          )}
+
           {/* Recent announcements — real GET wiring */}
           <div className="bg-cn-surface border border-cn-border rounded-2xl p-4">
             <div className="font-heading font-semibold text-[13.5px] text-ink-900 mb-2">Recently sent</div>
             {loadingRecent && <div className="text-ink-400 text-xs">Loading…</div>}
             {!loadingRecent && recent.length === 0 && <div className="text-ink-400 text-xs">No announcements yet.</div>}
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               {recent.map((a, idx) => (
-                <div key={a.id ?? idx} className="text-[12.5px] text-ink-700 flex items-center gap-2">
+                <div key={a.id ?? idx} className="flex items-center gap-2 flex-wrap">
                   <span className="w-1.5 h-1.5 rounded-full bg-violet-400 shrink-0" />
-                  <span className="font-semibold text-ink-900 truncate">{a.title}</span>
-                  <span className="text-ink-400 truncate">· {a.category || "General"}</span>
+                  <span className="font-semibold text-ink-900 text-[12.5px] truncate">{a.title}</span>
+                  {a.requires_acknowledgment && (
+                    <span className="text-[10px] font-bold rounded-full px-2 py-0.5 bg-warning-tint text-warning-hex">CIRCULAR</span>
+                  )}
+                  {a.requires_acknowledgment && (
+                    <>
+                      {a.my_acknowledged ? (
+                        <span className="text-[11px] font-semibold text-success-hex">✓ Acknowledged</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleAcknowledge(a)}
+                          disabled={ackingId === a.id}
+                          className="text-[11px] font-bold text-violet-700 hover:underline cursor-pointer"
+                        >
+                          Acknowledge
+                        </button>
+                      )}
+                      {isStaff && (
+                        <button type="button" onClick={() => openRoster(a)} className="text-[11px] text-ink-400 hover:underline cursor-pointer">
+                          ({a.acknowledged_count} acknowledged)
+                        </button>
+                      )}
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -341,6 +474,19 @@ const AnnouncementComposer = () => {
           </div>
         </div>
       </div>
+
+      <Modal isOpen={!!rosterFor} onClose={() => setRosterFor(null)} title={`Acknowledged — ${rosterFor?.title || ""}`}>
+        <div className="flex flex-col gap-2 w-[300px] max-w-full max-h-72 overflow-y-auto">
+          {!roster && <p className="text-ink-400 text-[13px] text-center py-4">Loading…</p>}
+          {roster && roster.acknowledged.length === 0 && <p className="text-ink-400 text-[13px] text-center py-4">No one has acknowledged this yet.</p>}
+          {roster?.acknowledged.map((a) => (
+            <div key={a.user_id} className="flex items-center justify-between border-b border-cn-border pb-1.5">
+              <span className="text-[13px] font-semibold text-ink-900">{a.name}</span>
+              <span className="text-[11px] text-ink-400">{new Date(a.acknowledged_at).toLocaleString()}</span>
+            </div>
+          ))}
+        </div>
+      </Modal>
     </div>
   );
 };

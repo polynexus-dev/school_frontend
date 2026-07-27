@@ -1,34 +1,15 @@
 import React, { useState } from "react";
-import { Outlet, useLocation, Navigate } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import Sidebar from "./sidebar/Sidebar";
 import Navbar from "./navbar/Navbar";
-import useUser from "../features/auth/hooks/useUser";
 
+// Role-based route gating lives solely in RoleRoute.jsx (nested inside this
+// layout's Outlet) — this file used to keep its own copy of the same
+// allowlist, which drifted out of sync (missing homework/timetable/hr/
+// paper-setting/notifications) and silently redirected valid pages to
+// /dashboard before RoleRoute's up-to-date check ever ran.
 const AppLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const location = useLocation();
-  const { user } = useUser();
-
-  const profile = user?.data;
-  const roleName = profile?.role || "Admin";
-
-  const isRouteAllowed = () => {
-    const path = location.pathname;
-    if (roleName === "Parent") {
-      return ["/dashboard", "/attendance", "/transport", "/fees", "/announcements"].some(allowed => path.startsWith(allowed));
-    }
-    if (roleName === "Teacher") {
-      return ["/dashboard", "/students", "/attendance", "/transport", "/announcements"].some(allowed => path.startsWith(allowed));
-    }
-    if (roleName === "Conductor") {
-      return ["/dashboard", "/transport", "/announcements"].some(allowed => path.startsWith(allowed));
-    }
-    return true;
-  };
-
-  if (!isRouteAllowed()) {
-    return <Navigate to="/dashboard" replace />;
-  }
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-cn-bg font-sans">

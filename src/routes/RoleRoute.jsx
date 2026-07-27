@@ -10,9 +10,13 @@ import Loader from "../components/Loader";
 // exposure. Any role not listed here (School Admin/Management/Admin/SaaS
 // Admin) gets full access.
 const ROLE_ALLOWED_PREFIXES = {
-  Parent: ["dashboard", "attendance", "transport", "fees", "announcements", "notifications"],
-  Teacher: ["dashboard", "students", "attendance", "transport", "announcements", "notifications"],
-  Conductor: ["dashboard", "transport", "announcements", "notifications"],
+  Parent: ["dashboard", "attendance", "transport", "fees", "announcements", "notifications", "homework", "timetable", "report-cards", "messages", "ptm", "calendar", "documents"],
+  Teacher: ["dashboard", "students", "attendance", "transport", "announcements", "notifications", "paper-setting", "homework", "timetable", "hr", "report-cards", "messages", "ptm", "library", "gate-passes", "calendar", "documents", "reports"],
+  Conductor: ["dashboard", "transport", "announcements", "notifications", "hr", "calendar", "documents"],
+  // Read-only: no fees/transport/messages/ptm — those are Parent-facing
+  // concerns. Students get exactly the same modules the Student mobile app
+  // would have covered, just via the web portal instead.
+  Student: ["dashboard", "homework", "timetable", "report-cards", "attendance", "announcements", "calendar", "documents", "notifications"],
 };
 
 const RoleRoute = () => {

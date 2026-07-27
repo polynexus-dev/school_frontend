@@ -28,7 +28,13 @@ const ProfileButton = () => {
   };
 
   const profile = user?.data;
-  const displayName = profile?.full_name || profile?.first_name || profile?.username || "Guest";
+  // /profile/ nests user fields under `profile.user` (see UserProfileView) —
+  // there's no top-level full_name/first_name/username on the profile itself.
+  const displayName =
+    profile?.full_name ||
+    [profile?.user?.first_name, profile?.user?.last_name].filter(Boolean).join(" ") ||
+    profile?.user?.username ||
+    "Guest";
   const initials = displayName
     .split(" ")
     .filter(Boolean)

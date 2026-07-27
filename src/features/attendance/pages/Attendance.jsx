@@ -11,7 +11,13 @@ import usePaginatedList from "../../../hooks/usePaginatedList";
 
 // Not one of the 5 School Edition design screens — kept intentionally light,
 // but still fully wired to the real GET/POST /api/attendance/ endpoints.
-const emptyForm = { student: "", date: new Date().toISOString().slice(0, 10), status: "present" };
+// toISOString() converts to UTC, which rolls over to the previous calendar
+// day during early-morning hours in IST — default to the local date instead.
+const todayLocal = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+};
+const emptyForm = { student: "", date: todayLocal(), status: "present" };
 
 const Attendance = () => {
   const { user } = useUser();
@@ -118,7 +124,7 @@ const Attendance = () => {
         </div>
       )}
 
-      {roleName !== "Parent" && (
+      {!["Parent", "Student"].includes(roleName) && (
         <div className="bg-cn-surface border border-cn-border rounded-2xl p-5 mb-6 flex flex-col md:flex-row items-end gap-3">
           <BlackInputField label="Student ID" fieldName="student" value={form.student} onChange={(e) => setForm((p) => ({ ...p, student: e.target.value }))} placeholder="e.g. 108" />
           <BlackInputField label="Date" fieldName="date" type="date" value={form.date} onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))} />

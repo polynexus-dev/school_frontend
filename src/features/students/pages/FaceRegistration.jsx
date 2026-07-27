@@ -76,7 +76,20 @@ const FaceRegistration = () => {
           return;
         }
         streamRef.current = stream;
-        if (videoRef.current) videoRef.current.srcObject = stream;
+        // The <video> element only mounts once the roster finishes loading
+        // and an activeStudent is selected — that fetch races this effect,
+        // so videoRef.current can still be null the instant getUserMedia
+        // resolves. Retry attachment until it mounts (or this effect is
+        // torn down) instead of silently dropping the already-granted stream.
+        const attachToVideoElement = () => {
+          if (cancelled) return;
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          } else {
+            requestAnimationFrame(attachToVideoElement);
+          }
+        };
+        attachToVideoElement();
         setCameraError("");
       } catch (err) {
         console.warn("Camera unavailable:", err);

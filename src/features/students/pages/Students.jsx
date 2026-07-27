@@ -21,13 +21,15 @@ import usePaginatedList from "../../../hooks/usePaginatedList";
 
 const asList = (data) => (Array.isArray(data) ? data : data?.results || []);
 
+// Values must match GuardianStudentLink.RELATIONSHIP_CHOICES on the backend
+// (school_app/models/guardians.py) — the serializer 400s on anything else.
 const RELATIONSHIP_OPTIONS = [
-  { label: "Mother", value: "Mother" },
-  { label: "Father", value: "Father" },
-  { label: "Grandmother", value: "Grandmother" },
-  { label: "Grandfather", value: "Grandfather" },
-  { label: "Legal Guardian", value: "Guardian" },
-  { label: "Other", value: "Other" },
+  { label: "Mother", value: "mother" },
+  { label: "Father", value: "father" },
+  { label: "Grandmother", value: "grandmother" },
+  { label: "Grandfather", value: "grandfather" },
+  { label: "Legal Guardian", value: "guardian" },
+  { label: "Other", value: "other" },
 ];
 
 const emptyForm = {
@@ -40,7 +42,7 @@ const emptyForm = {
 
 const emptyGuardianForm = {
   full_name: "",
-  relationship: "Mother",
+  relationship: "mother",
   phone: "",
   email: "",
 };
@@ -177,6 +179,18 @@ const Students = () => {
         </span>
       ),
     },
+    {
+      header: "Progress",
+      accessor: (row) => (
+        <button
+          type="button"
+          onClick={() => navigate(`/students/${row.id}/progress`)}
+          className="text-[12px] font-bold text-violet-700 hover:text-violet-950 hover:underline cursor-pointer bg-transparent border-none p-0 focus:outline-none"
+        >
+          View →
+        </button>
+      ),
+    },
   ];
 
   const resetForm = () => {
@@ -238,10 +252,12 @@ const Students = () => {
   };
 
   const inviteGuardian = async (studentId, guardianData, isPrimary) => {
+    // Guardian's model field is phone_number, not phone — this used to send
+    // "phone" and 400 on every single guardian invite (silently swallowed
+    // by the try/catch in handleSubmit below).
     const guardianRes = await guardianService.createGuardian({
       full_name: guardianData.full_name,
-      relationship: guardianData.relationship,
-      phone: guardianData.phone,
+      phone_number: guardianData.phone,
       email: guardianData.email,
     });
     const guardianId = guardianRes.data?.id;

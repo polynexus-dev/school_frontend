@@ -3,9 +3,21 @@ import { toast } from "react-toastify";
 import { Search, Plus } from "lucide-react";
 import Button from "../../../components/Button";
 import BlackInputField from "../../../components/BlackInputField";
+import SelectBox from "../../../components/SelectBox";
 import guardianService from "../services/guardianService";
 import Pagination from "../../../components/Pagination";
 import usePaginatedList from "../../../hooks/usePaginatedList";
+
+// Values must match GuardianStudentLink.RELATIONSHIP_CHOICES on the backend
+// (school_app/models/guardians.py) — the serializer 400s on anything else.
+const RELATIONSHIP_OPTIONS = [
+  { label: "Mother", value: "mother" },
+  { label: "Father", value: "father" },
+  { label: "Grandmother", value: "grandmother" },
+  { label: "Grandfather", value: "grandfather" },
+  { label: "Legal Guardian", value: "guardian" },
+  { label: "Other", value: "other" },
+];
 
 // Scaffold page — layout matches "Admin Web.dc.html" screen 4 (parent–student
 // linking manager). Pending requests + guardian search are wired to the real
@@ -20,7 +32,7 @@ const asList = (data) => (Array.isArray(data) ? data : data?.results || []);
 const initialsOf = (name = "") =>
   name.split(" ").filter(Boolean).map((n) => n[0]).join("").toUpperCase().slice(0, 2) || "?";
 
-const emptyNewLinkForm = { guardian_id: "", student_id: "", relationship: "Mother", is_primary: true };
+const emptyNewLinkForm = { guardian_id: "", student_id: "", relationship: "mother", is_primary: true };
 
 const GuardianLinking = () => {
   const {
@@ -36,7 +48,6 @@ const GuardianLinking = () => {
   // Defensive fallback in case the backend doesn't yet support ?status=
   // filtering and just returns everything.
   const links = rawLinks.filter((l) => !l.status || l.status === "pending");
-  const [dismissedIds, setDismissedIds] = useState([]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
@@ -108,10 +119,10 @@ const GuardianLinking = () => {
   };
 
   const handleApproveAll = async () => {
-    if (visibleLinks.length === 0) return;
+    if (links.length === 0) return;
     setApprovingAll(true);
     try {
-      await Promise.all(visibleLinks.map((link) => guardianService.verifyGuardianLink(link.id)));
+      await Promise.all(links.map((link) => guardianService.verifyGuardianLink(link.id)));
       toast.success("All guardian links approved.");
       fetchPendingLinks();
     } catch (err) {
@@ -132,8 +143,6 @@ const GuardianLinking = () => {
       toast.info(`Marked as "${action}" locally.`);
     }
   };
-
-  const visibleLinks = links.filter((l) => !dismissedIds.includes(l.id));
 
   const handleCreateLink = async () => {
     if (!newLinkForm.guardian_id || !newLinkForm.student_id) {
@@ -218,11 +227,12 @@ const GuardianLinking = () => {
               onChange={(e) => setNewLinkForm((p) => ({ ...p, student_id: e.target.value }))}
               placeholder="e.g. 108"
             />
-            <BlackInputField
+            <SelectBox
               label="Relationship"
               fieldName="relationship"
               value={newLinkForm.relationship}
               onChange={(e) => setNewLinkForm((p) => ({ ...p, relationship: e.target.value }))}
+              options={RELATIONSHIP_OPTIONS}
             />
           </div>
           <label className="flex items-center gap-2 text-[13px] text-ink-700 font-semibold cursor-pointer">
@@ -251,10 +261,10 @@ const GuardianLinking = () => {
             <div className="flex items-center gap-2.5">
               <span className="font-heading font-semibold text-[15px] text-ink-900">Pending requests</span>
               <span className="bg-warning-tint border border-amber-200 text-warning-hex rounded-lg px-2 py-0.5 text-[11.5px] font-extrabold">
-                {visibleLinks.length}
+                {links.length}
               </span>
             </div>
-            {visibleLinks.length > 0 && (
+            {links.length > 0 && (
               <button
                 type="button"
                 onClick={handleApproveAll}
@@ -267,13 +277,13 @@ const GuardianLinking = () => {
           </div>
 
           {loading && <div className="text-ink-400 text-sm">Loading…</div>}
-          {!loading && visibleLinks.length === 0 && (
+          {!loading && links.length === 0 && (
             <div className="bg-cn-surface border border-cn-border rounded-2xl p-6 text-center text-ink-400 text-sm">
               No pending guardian-link requests.
             </div>
           )}
 
-          {visibleLinks.map((link) => {
+          {links.map((link) => {
             const guardianName = link.guardian?.full_name || link.guardian_name || `Guardian #${link.guardian}`;
             const studentName = link.student?.full_name || link.student_name || `Student #${link.student}`;
             const phoneMismatch = link.phone_match_flag === false || link.phone_mismatch;

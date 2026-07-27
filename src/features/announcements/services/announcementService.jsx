@@ -11,9 +11,23 @@ const createAnnouncement = async (payload) => {
   return { status: response.status, data: response.data };
 };
 
+// POST /api/announcements/{id}/acknowledge/ — idempotent, any recipient.
+const acknowledgeAnnouncement = async (id) => {
+  const response = await api.post(`announcements/${id}/acknowledge/`);
+  return { status: response.status, data: response.data };
+};
+
+// GET /api/announcements/{id}/acknowledgments/ — staff-only roster.
+const getAcknowledgments = async (id) => {
+  const response = await api.get(`announcements/${id}/acknowledgments/`);
+  return { status: response.status, data: response.data };
+};
+
 const announcementService = {
   getAnnouncements,
   createAnnouncement,
+  acknowledgeAnnouncement,
+  getAcknowledgments,
 };
 
 export default announcementService;

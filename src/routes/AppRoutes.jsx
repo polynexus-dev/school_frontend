@@ -19,6 +19,29 @@ import Fees from "../features/fees/pages/Fees";
 import Announcements from "../features/announcements/pages/AnnouncementComposer";
 import Notifications from "../features/notifications/pages/Notifications";
 import Settings from "../features/settings/pages/Settings";
+import ExamPapers from "../features/academics/pages/ExamPapers";
+import SyllabusTopics from "../features/academics/pages/SyllabusTopics";
+import QuestionBank from "../features/academics/pages/QuestionBank";
+import ExamPaperBuilder from "../features/academics/pages/ExamPaperBuilder";
+import GradeExamPaper from "../features/academics/pages/GradeExamPaper";
+import HomeworkBoard from "../features/academics/pages/HomeworkBoard";
+import Timetable from "../features/academics/pages/Timetable";
+import ReportCards from "../features/academics/pages/ReportCards";
+import Messages from "../features/messaging/pages/Messages";
+import PTMSlots from "../features/ptm/pages/PTMSlots";
+import ChainDashboard from "../features/chain/pages/ChainDashboard";
+import Library from "../features/library/pages/Library";
+import Hostel from "../features/hostel/pages/Hostel";
+import VisitorLog from "../features/gate/pages/VisitorLog";
+import GatePasses from "../features/gate/pages/GatePasses";
+import Calendar from "../features/events/pages/Calendar";
+import Documents from "../features/documents/pages/Documents";
+import Certificates from "../features/certificates/pages/Certificates";
+import Inventory from "../features/inventory/pages/Inventory";
+import Reports from "../features/reports/pages/Reports";
+import LeaveRequests from "../features/hr/pages/LeaveRequests";
+import StaffAttendance from "../features/hr/pages/StaffAttendance";
+import StudentProgress from "../features/students/pages/StudentProgress";
 
 const AppRoutes = () => {
   return (
@@ -37,6 +60,31 @@ const AppRoutes = () => {
             <Route path="students" element={<Students />} />
             <Route path="students/face-registration" element={<FaceRegistration />} />
             <Route path="students/promote-class" element={<PromoteClass />} />
+            <Route path="students/:id/progress" element={<StudentProgress />} />
+
+            {/* Paper Setting from Syllabus */}
+            <Route path="paper-setting" element={<ExamPapers />} />
+            <Route path="paper-setting/syllabus-topics" element={<SyllabusTopics />} />
+            <Route path="paper-setting/question-bank" element={<QuestionBank />} />
+            <Route path="paper-setting/:id" element={<ExamPaperBuilder />} />
+            <Route path="paper-setting/:id/grade" element={<GradeExamPaper />} />
+            <Route path="homework" element={<HomeworkBoard />} />
+            <Route path="timetable" element={<Timetable />} />
+            <Route path="report-cards" element={<ReportCards />} />
+            <Route path="messages" element={<Messages />} />
+            <Route path="ptm" element={<PTMSlots />} />
+            <Route path="chain-dashboard" element={<ChainDashboard />} />
+            <Route path="library" element={<Library />} />
+            <Route path="hostel" element={<Hostel />} />
+            <Route path="visitors" element={<VisitorLog />} />
+            <Route path="gate-passes" element={<GatePasses />} />
+            <Route path="calendar" element={<Calendar />} />
+            <Route path="documents" element={<Documents />} />
+            <Route path="certificates" element={<Certificates />} />
+            <Route path="inventory" element={<Inventory />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="hr/leave" element={<LeaveRequests />} />
+            <Route path="hr/attendance" element={<StaffAttendance />} />
 
             <Route path="parents-linking" element={<GuardianLinking />} />
             <Route path="attendance" element={<Attendance />} />

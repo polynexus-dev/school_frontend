@@ -14,6 +14,23 @@ import {
   Megaphone,
   Bell,
   Settings as SettingsIcon,
+  ClipboardList,
+  BookOpen,
+  CalendarDays,
+  ClipboardCheck,
+  UserCheck,
+  FileText,
+  MessageSquare,
+  CalendarClock,
+  Building2,
+  Library as LibraryIcon,
+  Hotel,
+  UserPlus,
+  DoorOpen,
+  FolderOpen,
+  Award,
+  Boxes,
+  FileBarChart2,
 } from "lucide-react";
 
 // Matches Admin Web.dc.html's flat nav: Dashboard / Students / Parents &
@@ -24,6 +41,24 @@ import {
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: <LayoutDashboard size={17} /> },
   { label: "Students", path: "/students", icon: <GraduationCap size={17} />, matchPrefix: true },
+  { label: "Paper Setting", path: "/paper-setting", icon: <ClipboardList size={17} />, matchPrefix: true },
+  { label: "Homework", path: "/homework", icon: <BookOpen size={17} /> },
+  { label: "Timetable", path: "/timetable", icon: <CalendarDays size={17} /> },
+  { label: "Report Cards", path: "/report-cards", icon: <FileText size={17} /> },
+  { label: "Messages", path: "/messages", icon: <MessageSquare size={17} /> },
+  { label: "PTM", path: "/ptm", icon: <CalendarClock size={17} /> },
+  { label: "Library", path: "/library", icon: <LibraryIcon size={17} /> },
+  { label: "Hostel", path: "/hostel", icon: <Hotel size={17} /> },
+  { label: "Visitor Log", path: "/visitors", icon: <UserPlus size={17} /> },
+  { label: "Gate Passes", path: "/gate-passes", icon: <DoorOpen size={17} /> },
+  { label: "Calendar", path: "/calendar", icon: <CalendarDays size={17} /> },
+  { label: "Documents", path: "/documents", icon: <FolderOpen size={17} /> },
+  { label: "Certificates", path: "/certificates", icon: <Award size={17} /> },
+  { label: "Inventory", path: "/inventory", icon: <Boxes size={17} /> },
+  { label: "Reports", path: "/reports", icon: <FileBarChart2 size={17} /> },
+  { label: "Chain Dashboard", path: "/chain-dashboard", icon: <Building2 size={17} /> },
+  { label: "Leave", path: "/hr/leave", icon: <ClipboardCheck size={17} /> },
+  { label: "Staff Attendance", path: "/hr/attendance", icon: <UserCheck size={17} /> },
   { label: "Parents & Linking", path: "/parents-linking", icon: <Users size={17} /> },
   { label: "Attendance", path: "/attendance", icon: <CalendarCheck2 size={17} /> },
   { label: "Transport", path: "/transport", icon: <Bus size={17} /> },
@@ -39,7 +74,13 @@ const Sidebar = ({ onClose }) => {
   const { user } = useUser();
 
   const profile = user?.data;
-  const fullName = profile?.full_name || profile?.first_name || profile?.username || "School Office";
+  // /profile/ nests user fields under `profile.user` (see UserProfileView) —
+  // there's no top-level full_name/first_name/username on the profile itself.
+  const fullName =
+    profile?.full_name ||
+    [profile?.user?.first_name, profile?.user?.last_name].filter(Boolean).join(" ") ||
+    profile?.user?.username ||
+    "School Office";
   const roleName = profile?.role || "Admin";
   const initials = fullName
     .split(" ")
@@ -58,10 +99,10 @@ const Sidebar = ({ onClose }) => {
         <div className="flex items-center gap-2.5 px-1.5 pb-5 border-b border-white/12 justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-[34px] h-[34px] rounded-[10px] bg-white/12 flex items-center justify-center font-heading font-extrabold text-[15px] shrink-0">
-              CN
+              VD
             </div>
             <div className="min-w-0">
-              <div className="font-heading font-bold text-[14.5px] truncate">CampusNexus</div>
+              <div className="font-heading font-bold text-[14.5px] truncate">VIDYUM</div>
               <div className="text-white/50 text-[10.5px] font-semibold tracking-[0.06em]">SCHOOL EDITION</div>
             </div>
           </div>
@@ -77,13 +118,21 @@ const Sidebar = ({ onClose }) => {
           {navItems
             .filter((item) => {
               if (roleName === "Parent") {
-                return ["Dashboard", "Attendance", "Transport", "Fees", "Announcements", "Notifications"].includes(item.label);
+                return ["Dashboard", "Homework", "Timetable", "Report Cards", "Messages", "PTM", "Calendar", "Documents", "Attendance", "Transport", "Fees", "Announcements", "Notifications"].includes(item.label);
               }
               if (roleName === "Teacher") {
-                return ["Dashboard", "Students", "Attendance", "Transport", "Announcements", "Notifications"].includes(item.label);
+                return ["Dashboard", "Students", "Paper Setting", "Homework", "Timetable", "Report Cards", "Messages", "PTM", "Library", "Gate Passes", "Calendar", "Documents", "Reports", "Attendance", "Transport", "Announcements", "Notifications", "Leave", "Staff Attendance"].includes(item.label);
               }
               if (roleName === "Conductor") {
-                return ["Dashboard", "Transport", "Announcements", "Notifications"].includes(item.label);
+                return ["Dashboard", "Transport", "Announcements", "Notifications", "Leave", "Staff Attendance", "Calendar", "Documents"].includes(item.label);
+              }
+              if (roleName === "Student") {
+                return ["Dashboard", "Homework", "Timetable", "Report Cards", "Attendance", "Announcements", "Calendar", "Documents", "Notifications"].includes(item.label);
+              }
+              // Chain Dashboard spans schools, not scoped to one — only the
+              // chain-owning SaaS Admin should see it, not per-school staff.
+              if (item.label === "Chain Dashboard") {
+                return roleName === "SaaS Admin";
               }
               return true; // School Admin, Management, Admin, SaaS Admin
             })
@@ -116,7 +165,7 @@ const Sidebar = ({ onClose }) => {
         <div className="min-w-0 flex-1">
           <div className="text-[12.5px] font-bold truncate">{fullName}</div>
           <div className="text-white/50 text-[10.5px] truncate">
-            {roleName === 'Parent' ? 'Parent Portal' : roleName === 'Teacher' ? 'Teacher Portal' : roleName === 'Conductor' ? 'Conductor Portal' : `School Office · ${roleName}`}
+            {roleName === 'Parent' ? 'Parent Portal' : roleName === 'Teacher' ? 'Teacher Portal' : roleName === 'Conductor' ? 'Conductor Portal' : roleName === 'Student' ? 'Student Portal' : `School Office · ${roleName}`}
           </div>
         </div>
       </div>
