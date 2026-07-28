@@ -1,0 +1,12 @@
+# Crawl instructions for Googlebot, Bingbot, and search engines
+User-agent: *
+Allow: /
+Allow: /login
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /settings/
+Disallow: /students/
+Disallow: /fees/
+
+# Sitemap location for vidyam.co.in
+Sitemap: https://vidyam.co.in/sitemap.xml

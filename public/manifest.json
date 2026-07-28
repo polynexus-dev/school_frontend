@@ -1,0 +1,19 @@
+{
+  "short_name": "VIDYAM",
+  "name": "VIDYAM — AI School Operating System & DPDP 2023 Compliant ERP",
+  "description": "India's premier AI-powered School Operating System & DPDP Act 2023 compliant ERP. Automate substitute teacher allocation, digital TC clearance, infirmary alerts & fee collection.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0b071a",
+  "theme_color": "#7c3aed",
+  "display": "standalone",
+  "orientation": "portrait",
+  "categories": ["education", "productivity", "utilities"]
+}

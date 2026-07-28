@@ -1,26 +1,200 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!--
-      Auth tokens live in localStorage (see src/services/api.jsx), which is
-      readable by any script that runs on this page — this CSP's main job is
-      making sure only this app's own bundled script can run at all, so an
-      injected/third-party <script> can't read that storage in the first
-      place. connect-src is left open because the API origin is set per
-      deployment via VITE_API_URL at build time, not known here; tighten it
-      to the real API host at the hosting/reverse-proxy layer once that's
-      fixed for a given deployment.
-    -->
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests; default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src *; object-src 'none'; base-uri 'self'; frame-ancestors 'self';" />
-    <title>VIDYAM School Edition</title>
+    
+    <!-- Primary Enterprise SEO Meta Tags -->
+    <title>VIDYAM — #1 AI School Operating System & DPDP Act 2023 Compliant School ERP in India</title>
+    <meta name="title" content="VIDYAM — #1 AI School Operating System & DPDP Act 2023 Compliant School ERP in India" />
+    <meta name="description" content="VIDYAM is India's leading AI-powered School Operating System & DPDP Act 2023 compliant ERP. Automate morning substitute teacher allocation in 10s, 1-click digital QR Transfer Certificate clearance, infirmary allergy alerts, live bus GPS tracking & fee collection." />
+    <meta name="keywords" content="school erp, school erp software, best school erp, school management software, school erp india, student management system, school automation software, learning management system, lms for schools, school crm, school administration software, online school software, parent teacher communication app, attendance management software, fee management software, examination management software, ai powered school erp, digital school platform, cloud school erp, school mobile app, campus management system, cbse school erp, icse school erp, vidyam" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="author" content="Polynexus (polynexus.in)" />
+    <meta name="publisher" content="Polynexus Technologies" />
+    <meta name="theme-color" content="#7c3aed" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="VIDYAM" />
+    <link rel="canonical" href="https://vidyam.co.in/" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Geo & Regional Targeting (India & Global) -->
+    <meta name="geo.region" content="IN" />
+    <meta name="geo.placename" content="India" />
+    <meta name="target" content="all" />
+    <meta name="audience" content="all" />
+    <meta name="coverage" content="Worldwide" />
+
+    <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://vidyam.co.in/" />
+    <meta property="og:title" content="VIDYAM — Next-Gen AI School OS & DPDP Act 2023 Compliant ERP" />
+    <meta property="og:description" content="Automate substitute teacher allocation in 10 seconds, eliminate paperwork with 1-click digital QR Transfer Certificates, and shield your school with built-in DPDP Act 2023 compliance." />
+    <meta property="og:site_name" content="VIDYAM School Operating System" />
+    <meta property="og:locale" content="en_IN" />
+
+    <!-- Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://vidyam.co.in/" />
+    <meta name="twitter:title" content="VIDYAM — #1 AI School Operating System & DPDP 2023 Compliant ERP" />
+    <meta name="twitter:description" content="Automate substitute teacher allocation, 1-click digital TC clearance, infirmary alerts & DPDP Act 2023 compliance for schools." />
+
+    <!-- Favicon & Font Performance Optimization -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Structured Data (JSON-LD) for Search Engines & AI Overviews -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://vidyam.co.in/#website",
+          "url": "https://vidyam.co.in/",
+          "name": "VIDYAM School Operating System",
+          "description": "India's premier AI-powered School Operating System & DPDP Act 2023 compliant ERP",
+          "publisher": {
+            "@id": "https://vidyam.co.in/#organization"
+          },
+          "inLanguage": "en-IN"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://vidyam.co.in/#software",
+          "url": "https://vidyam.co.in/",
+          "name": "VIDYAM School ERP & Operating System",
+          "applicationCategory": "EducationalApplication",
+          "operatingSystem": "Web, Android, iOS",
+          "description": "Comprehensive AI-Powered School ERP, LMS, SIS, and Administration Platform with built-in DPDP Act 2023 compliance, automated substitute teacher allocation, and digital TC clearance.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "INR"
+          },
+          "publisher": {
+            "@id": "https://vidyam.co.in/#organization"
+          },
+          "featureList": [
+            "AI Substitute Teacher Allocator (10-second auto scoring)",
+            "DPDP Act 2023 Legal Consent & Cryptographic Audit Shield",
+            "1-Second Digital Multi-Department TC Clearance with Public QR",
+            "Infirmary Real-Time Medical Allergy & Emergency Alerts",
+            "Live Bus GPS Tracking & Conductor QR Boarding Scans",
+            "Unified Multi-Child Parent Portal with 1-Tap Toggle",
+            "Fee Collection with Instant UPI/Card Receipts & Auto-Reminders"
+          ]
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://vidyam.co.in/#organization",
+          "name": "VIDYAM",
+          "legalName": "Polynexus Technologies",
+          "url": "https://vidyam.co.in/",
+          "logo": "https://vidyam.co.in/favicon.svg",
+          "sameAs": [
+            "https://polynexus.in"
+          ],
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer support",
+            "email": "support@polynexus.in",
+            "areaServed": "IN",
+            "availableLanguage": ["English", "Hindi"]
+          }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "@id": "https://vidyam.co.in/#breadcrumb",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://vidyam.co.in/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "AI Engine",
+              "item": "https://vidyam.co.in/#ai-engine"
+            },
+            {
+              "@type": "ListItem",
+              "position": 3,
+              "name": "DPDP Shield",
+              "item": "https://vidyam.co.in/#dpdp-shield"
+            },
+            {
+              "@type": "ListItem",
+              "position": 4,
+              "name": "Why VIDYAM",
+              "item": "https://vidyam.co.in/#comparison"
+            },
+            {
+              "@type": "ListItem",
+              "position": 5,
+              "name": "FAQ",
+              "item": "https://vidyam.co.in/#faq"
+            }
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://vidyam.co.in/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What is VIDYAM School Operating System?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "VIDYAM is India's premier AI-powered School Operating System designed to automate morning substitute teacher allocation, handle 1-click digital QR Transfer Certificate clearances, provide real-time infirmary medical alerts, and enforce full DPDP Act 2023 legal compliance."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How does VIDYAM compare to traditional School ERP software?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Unlike outdated 2005-era ERP tables that act as basic data input forms, VIDYAM provides active AI automation, 10-second substitute allocation, cryptographic DPDP Act consent certificates, and a unified multi-child parent portal."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How does VIDYAM automate substitute teacher allocation?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "VIDYAM's AI engine automatically ranks available free-period teachers in under 10 seconds based on subject match (+50 pts), grade-level experience (+20 pts), and daily workload (-15 pts penalty) when a regular teacher requests leave."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is VIDYAM compliant with India's DPDP Act 2023?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, VIDYAM features built-in Digital Personal Data Protection (DPDP) Act 2023 legal compliance tools, including parental consent certificates, cryptographic audit logging, student exit data retention policies, and transparent consent management."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How does 1-second Transfer Certificate (TC) clearance work?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "VIDYAM auto-checks fee dues, library book returns, and hostel asset clearances across departments in 1 second, issuing a public QR-verifiable digital Transfer Certificate."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
   </head>
-  <body>
+  <body className="antialiased selection:bg-purple-500 selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

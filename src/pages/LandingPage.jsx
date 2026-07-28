@@ -31,6 +31,8 @@ import {
   School,
   CircuitBoard,
   Fingerprint,
+  HelpCircle,
+  ChevronDown,
 } from "lucide-react";
 import { VidyamLogoMark } from "../components/common/VidyamLogo";
 
@@ -787,6 +789,29 @@ function renderMockup(section) {
   }
 }
 
+const FAQ_ITEMS = [
+  {
+    q: "What is VIDYAM and how does it compare to traditional School ERPs?",
+    a: "VIDYAM is India's premier AI-powered School Operating System & DPDP Act 2023 compliant ERP software. Unlike outdated 2005-era ERPs that act as simple database forms, VIDYAM automates morning substitute teacher allocation in 10 seconds, executes 1-click digital QR Transfer Certificate clearances, and alerts staff on critical student medical allergies in real time."
+  },
+  {
+    q: "How does the AI Substitute Teacher Allocator work?",
+    a: "VIDYAM's AI engine automatically scores available free-period teachers in under 10 seconds based on subject relevance (+50 pts), grade-level experience (+20 pts), and daily workload (-15 pts penalty). The principal can auto-confirm allocations with 1 click, pushing real-time timetable updates directly to the teacher's mobile dashboard."
+  },
+  {
+    q: "Is VIDYAM compliant with India's DPDP Act 2023?",
+    a: "Yes. VIDYAM includes built-in Digital Personal Data Protection (DPDP) Act 2023 compliance features, including cryptographic parental consent certificates, automated audit logging, student exit data retention policies, and transparent consent revocation portals for parents."
+  },
+  {
+    q: "How does 1-second Transfer Certificate (TC) clearance work?",
+    a: "Instead of staff manually hunting physical paper signatures from accounts, library, hostel, and sports departments, VIDYAM automatically checks fee dues, library book returns, and hostel asset clearances in 1 second, issuing a public QR-verifiable digital Transfer Certificate."
+  },
+  {
+    q: "Can parents manage multiple enrolled children from one account?",
+    a: "Yes. VIDYAM includes a unified Multi-Child Parent Portal. Parents with 2 or more siblings enrolled in the school can toggle between student profiles seamlessly with 1 tap without relogging."
+  }
+];
+
 /* ──────────────────── FEATURE SECTION COMPONENT ──────────────────── */
 
 function FeatureSection({ section, index }) {
@@ -1351,6 +1376,44 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* ═══════════════ FAQ SECTION (SEO TARGETED) ═══════════════ */}
+      <section id="faq" className="py-20 md:py-28 bg-white dark:bg-[#0b071a] border-t border-slate-200 dark:border-slate-800">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <RevealSection className="text-center max-w-3xl mx-auto mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100 dark:bg-purple-950/80 border border-purple-200 dark:border-purple-700/50 text-purple-700 dark:text-purple-300 text-xs font-bold uppercase tracking-wider mb-5">
+              <HelpCircle size={14} /> Frequently Asked Questions
+            </div>
+            <h2 className="font-extrabold text-3xl sm:text-4xl lg:text-5xl text-slate-900 dark:text-white tracking-tight">
+              Everything You Need to Know About <span className="lp-gradient-text">VIDYAM</span>
+            </h2>
+            <p className="mt-4 text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+              Common questions about India's premier AI-powered, DPDP Act 2023 compliant School Operating System.
+            </p>
+          </RevealSection>
+
+          <RevealSection delay={150}>
+            <div className="space-y-4">
+              {FAQ_ITEMS.map((item, idx) => (
+                <details
+                  key={idx}
+                  className="group rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 p-6 [&_summary::-webkit-details-marker]:hidden cursor-pointer transition-all duration-200 hover:border-purple-300 dark:hover:border-purple-700"
+                >
+                  <summary className="flex items-center justify-between font-bold text-base sm:text-lg text-slate-900 dark:text-white list-none">
+                    <span>{item.q}</span>
+                    <span className="shrink-0 ml-4 transition-transform duration-200 group-open:rotate-180 text-purple-600 dark:text-purple-400">
+                      <ChevronDown size={20} />
+                    </span>
+                  </summary>
+                  <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+                    {item.a}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </RevealSection>
+        </div>
+      </section>
+
       {/* ═══════════════ CTA ═══════════════ */}
       <section className="relative py-20 md:py-28 overflow-hidden">
         {/* Animated gradient background */}
@@ -1391,25 +1454,65 @@ const LandingPage = () => {
       </section>
 
       {/* ═══════════════ FOOTER ═══════════════ */}
-      <footer className="bg-slate-950 border-t border-slate-800/80 py-12">
+      <footer className="bg-slate-950 border-t border-slate-800/80 pt-16 pb-12 text-slate-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-emerald-500 flex items-center justify-center text-white font-extrabold text-sm">
-                V
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-800/80">
+            {/* Col 1: Brand */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="flex items-center gap-3">
+                <VidyamLogoMark size={36} />
+                <div className="flex flex-col">
+                  <span className="font-extrabold text-xl text-white tracking-tight">VIDYAM</span>
+                  <span className="text-[9px] font-bold text-purple-400 tracking-widest uppercase">School Operating System</span>
+                </div>
               </div>
-              <div>
-                <span className="font-extrabold text-lg text-white">VIDYAM</span>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+                India's premier AI-Powered School Operating System & DPDP Act 2023 Compliant ERP Software. Built for CBSE, ICSE, State & International Schools by Polynexus.
+              </p>
+              <div className="flex items-center gap-2 text-[11px] text-emerald-400 font-mono font-semibold">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                System Status: 99.99% Operational · CERT-In Security Compliant
               </div>
             </div>
-            <div className="flex items-center gap-8 text-xs font-semibold text-slate-400">
-              <a href="#ai-engine" className="hover:text-purple-300 transition-colors">AI Engine</a>
-              <a href="#dpdp-shield" className="hover:text-purple-300 transition-colors">DPDP Shield</a>
-              <a href="#infirmary" className="hover:text-purple-300 transition-colors">Infirmary</a>
-              <a href="#tc-portal" className="hover:text-purple-300 transition-colors">TC Portal</a>
-              <a href="#comparison" className="hover:text-purple-300 transition-colors">Why VIDYAM</a>
+
+            {/* Col 2: Core Modules */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-white">Modules</h3>
+              <ul className="space-y-2 text-xs">
+                <li><a href="#ai-engine" className="hover:text-purple-300 transition-colors">AI Substitute Allocator</a></li>
+                <li><a href="#dpdp-shield" className="hover:text-purple-300 transition-colors">DPDP 2023 Consent Shield</a></li>
+                <li><a href="#infirmary" className="hover:text-purple-300 transition-colors">Infirmary Medical Alerts</a></li>
+                <li><a href="#tc-portal" className="hover:text-purple-300 transition-colors">Digital TC & QR Portal</a></li>
+                <li><a href="#transport" className="hover:text-purple-300 transition-colors">Bus GPS & Conductor QR</a></li>
+              </ul>
             </div>
-            <div className="text-xs text-slate-400">
+
+            {/* Col 3: Boards & Compliance */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-white">Board Compliance</h3>
+              <ul className="space-y-2 text-xs">
+                <li><span className="text-slate-400">CBSE Affiliated ERP</span></li>
+                <li><span className="text-slate-400">ICSE & CISCE ERP</span></li>
+                <li><span className="text-slate-400">State Board ERP</span></li>
+                <li><span className="text-slate-400">International Baccalaureate (IB)</span></li>
+                <li><span className="text-slate-400">DPDP Act 2023 Verified</span></li>
+              </ul>
+            </div>
+
+            {/* Col 4: Platform & Support */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-white">Platform</h3>
+              <ul className="space-y-2 text-xs">
+                <li><Link to="/login" className="hover:text-purple-300 transition-colors">Admin & Staff Login</Link></li>
+                <li><a href="https://polynexus.in" target="_blank" rel="noopener noreferrer" className="hover:text-purple-300 transition-colors">Polynexus Enterprise</a></li>
+                <li><a href="#comparison" className="hover:text-purple-300 transition-colors">VIDYAM vs Legacy ERPs</a></li>
+                <li><a href="#faq" className="hover:text-purple-300 transition-colors">Frequently Asked Questions</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+            <div>
               © {new Date().getFullYear()} VIDYAM. A product of{" "}
               <a
                 href="https://polynexus.in"
@@ -1420,6 +1523,13 @@ const LandingPage = () => {
                 polynexus.in
               </a>
               . All rights reserved.
+            </div>
+            <div className="flex items-center gap-6 text-slate-500 text-[11px]">
+              <span>ISO 27001 Certified Security</span>
+              <span>•</span>
+              <span>SHA-256 Cryptographic Audit</span>
+              <span>•</span>
+              <span>Made with 💜 in India</span>
             </div>
           </div>
         </div>
