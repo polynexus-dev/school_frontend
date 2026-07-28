@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import VidyamLogoMark from "../../../components/common/VidyamLogo";
 import Logo from "../../../assets/campusnexus_logo.svg";
 import authService from "../services/authService";
 import Loader from "../../../components/Loader";
@@ -90,8 +91,8 @@ const Login = () => {
             <div className="text-white/70 text-[11px] font-extrabold uppercase tracking-[0.2em]">
               Enterprise Suite
             </div>
-            <div className="mt-3 font-heading font-bold text-base text-white">
-              VIDYAM
+            <div className="mt-3 font-heading font-bold text-base text-white flex items-center gap-2">
+              <VidyamLogoMark size={24} /> VIDYAM
             </div>
           </div>
           <a
@@ -122,8 +123,11 @@ const Login = () => {
       <div className="w-full md:w-1/2 flex flex-col justify-between p-8 sm:p-16 md:p-20 bg-[#1B1723] overflow-y-auto h-full">
         <div className="flex-grow flex flex-col justify-center max-w-[420px] w-full mx-auto">
           <div className="flex flex-col items-center mb-2">
-            <img src={Logo} alt="VIDYAM" className="h-[74px] w-auto" />
-            <div className="text-[9px] font-extrabold tracking-[0.22em] text-violet-400 mt-1.5">
+            <VidyamLogoMark size={74} />
+            <div className="text-[13px] font-extrabold tracking-[0.22em] text-violet-400 mt-3">
+              VIDYAM
+            </div>
+            <div className="text-[9px] font-extrabold tracking-[0.22em] text-white/40 mt-0.5">
               POWERED BY POLYNEXUS
             </div>
           </div>

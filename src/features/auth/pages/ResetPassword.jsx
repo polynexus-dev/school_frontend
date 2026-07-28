@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import VidyamLogoMark from "../../../components/common/VidyamLogo";
 import Logo from "../../../assets/campusnexus_logo.svg";
 import authService from "../services/authService";
 import Loader from "../../../components/Loader";
@@ -80,7 +81,10 @@ const ResetPassword = () => {
       <div className="w-full md:w-1/2 flex flex-col justify-between p-8 sm:p-16 md:p-20 bg-[#1B1723] overflow-y-auto h-full">
         <div className="flex-grow flex flex-col justify-center max-w-[420px] w-full mx-auto">
           <div className="flex flex-col items-center mb-2">
-            <img src={Logo} alt="VIDYAM" className="h-[74px] w-auto" />
+            <VidyamLogoMark size={74} />
+            <div className="text-[13px] font-extrabold tracking-[0.22em] text-violet-400 mt-3">
+              VIDYAM
+            </div>
           </div>
 
           <div className="text-center mt-8">

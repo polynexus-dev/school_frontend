@@ -13,7 +13,7 @@ RUN npm ci
 COPY . .
 
 # Build argument for API URL (defaults to http://localhost:6699/api/)
-ARG VITE_API_URL=http://localhost:6699/api/
+ARG VITE_API_URL=https://vidyam.co.in/api/
 ENV VITE_API_URL=${VITE_API_URL}
 
 # Build production bundle

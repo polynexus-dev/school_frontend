@@ -15,12 +15,25 @@ export const getSubdomainTenant = () => {
 };
 
 export const getBaseURL = () => {
-  const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl && !envUrl.includes("127.0.0.1") && !envUrl.includes("localhost")) {
-    return envUrl;
+  let envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl && envUrl.trim()) {
+    let url = envUrl.trim();
+    if (!url.endsWith("/")) url += "/";
+    // Auto-upgrade http:// to https:// if page is loaded over HTTPS to avoid (blocked:mixed-content)
+    if (typeof window !== "undefined" && window.location.protocol === "https:" && url.startsWith("http://")) {
+      url = url.replace("http://", "https://");
+    }
+    return url;
   }
-  const hostname = typeof window !== "undefined" && window.location.hostname ? window.location.hostname : "127.0.0.1";
-  return `http://${hostname}:8000/api/`;
+  if (typeof window !== "undefined" && window.location.hostname) {
+    const protocol = window.location.protocol || "http:";
+    const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    if (isLocal) {
+      return `${protocol}//${window.location.hostname}:8000/api/`;
+    }
+    return `${protocol}//${window.location.hostname}/api/`;
+  }
+  return "http://127.0.0.1:8000/api/";
 };
 
 const api = axios.create({

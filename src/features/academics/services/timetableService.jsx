@@ -23,6 +23,29 @@ const deleteSlot = async (id) => {
   return { status: response.status, data: response.data };
 };
 
-const timetableService = { getSlots, createSlot, updateSlot, deleteSlot };
+const getSubstituteSuggestions = async (params = {}) => {
+  const response = await api.get("substitute-allocations/suggest/", { params });
+  return { status: response.status, data: response.data };
+};
+
+const confirmSubstitutes = async (payload) => {
+  const response = await api.post("substitute-allocations/confirm/", payload);
+  return { status: response.status, data: response.data };
+};
+
+const getSubstituteAssignments = async (params = {}) => {
+  const response = await api.get("substitute-allocations/", { params });
+  return { status: response.status, data: response.data };
+};
+
+const timetableService = {
+  getSlots,
+  createSlot,
+  updateSlot,
+  deleteSlot,
+  getSubstituteSuggestions,
+  confirmSubstitutes,
+  getSubstituteAssignments,
+};
 
 export default timetableService;

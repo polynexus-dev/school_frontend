@@ -33,7 +33,10 @@ import {
   Award,
   Boxes,
   FileBarChart2,
+  HeartPulse,
+  FileCheck,
 } from "lucide-react";
+import VidyamLogoMark from "../../components/common/VidyamLogo";
 
 // Matches Admin Web.dc.html's flat nav: Dashboard / Students / Parents &
 // Linking / Attendance / Transport / Fees / Announcements / Settings.
@@ -61,6 +64,8 @@ const navItems = [
   { label: "Calendar", path: "/calendar", icon: <CalendarDays size={17} /> },
   { label: "Documents", path: "/documents", icon: <FolderOpen size={17} /> },
   { label: "Certificates", path: "/certificates", icon: <Award size={17} /> },
+  { label: "Transfer Certificates", path: "/transfer-certificates", icon: <FileCheck size={17} /> },
+  { label: "Infirmary", path: "/infirmary", icon: <HeartPulse size={17} /> },
   { label: "Inventory", path: "/inventory", icon: <Boxes size={17} /> },
   { label: "Reports", path: "/reports", icon: <FileBarChart2 size={17} /> },
   { label: "Chain Dashboard", path: "/chain-dashboard", icon: <Building2 size={17} /> },
@@ -105,9 +110,7 @@ const Sidebar = ({ onClose }) => {
       <div className="flex flex-col flex-1 overflow-hidden">
         <div className="flex items-center gap-2.5 px-1.5 pb-5 border-b border-white/12 justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-[34px] h-[34px] rounded-[10px] bg-white/12 flex items-center justify-center font-heading font-extrabold text-[15px] shrink-0">
-              VD
-            </div>
+            <VidyamLogoMark size={34} />
             <div className="min-w-0">
               <div className="font-heading font-bold text-[14.5px] truncate">VIDYAM</div>
               <div className="text-white/50 text-[10.5px] font-semibold tracking-[0.06em]">SCHOOL EDITION</div>

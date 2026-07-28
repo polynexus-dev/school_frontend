@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, ShieldCheck, Printer, QrCode } from "lucide-react";
 import Button from "../../../components/Button";
+import Modal from "../../../components/Modal";
 import BlackInputField from "../../../components/BlackInputField";
 import SelectBox from "../../../components/SelectBox";
 import guardianService from "../services/guardianService";
+import api from "../../../services/api";
 import Pagination from "../../../components/Pagination";
 import usePaginatedList from "../../../hooks/usePaginatedList";
 
@@ -60,6 +62,22 @@ const GuardianLinking = () => {
   const [showNewLinkForm, setShowNewLinkForm] = useState(false);
   const [newLinkForm, setNewLinkForm] = useState(emptyNewLinkForm);
   const [creatingLink, setCreatingLink] = useState(false);
+
+  const [certData, setCertData] = useState(null);
+  const [loadingCert, setLoadingCert] = useState(false);
+
+  const fetchConsentCert = async (guardianId) => {
+    setLoadingCert(true);
+    try {
+      const res = await api.get(`consent/certificate/${guardianId}/`);
+      setCertData(res.data);
+    } catch (err) {
+      console.error("Failed to fetch consent certificate:", err);
+      toast.error("Failed to fetch DPDP Consent Certificate.");
+    } finally {
+      setLoadingCert(false);
+    }
+  };
 
   useEffect(() => {
     if (!searchQuery.trim()) {
@@ -393,10 +411,115 @@ const GuardianLinking = () => {
                   <div className="text-ink-400 text-sm">No linked children found for this guardian.</div>
                 )}
               </div>
+
+              {/* DPDP Consent Certificate Download Action */}
+              <div className="mt-4 pt-4 border-t border-cn-border">
+                <button
+                  type="button"
+                  onClick={() => fetchConsentCert(selectedGuardian.id)}
+                  disabled={loadingCert}
+                  className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition"
+                >
+                  🛡️ {loadingCert ? "Fetching Certificate..." : "Download DPDP Consent Certificate"}
+                </button>
+              </div>
             </>
           )}
         </div>
       </div>
+
+      {/* DPDP Consent Certificate Printable Modal */}
+      {certData && (
+        <Modal isOpen={!!certData} onClose={() => setCertData(null)} title="Official DPDP Parental Consent Certificate">
+          <div className="w-[520px] max-w-full p-6 bg-white border border-slate-200 rounded-2xl flex flex-col gap-4 text-xs">
+            <div className="text-center border-b pb-3">
+              <div className="flex items-center justify-center gap-2 text-emerald-600 mb-1">
+                <ShieldCheck size={26} />
+                <h2 className="font-extrabold text-lg text-emerald-950 uppercase tracking-wide">DPDP CONSENT CERTIFICATE</h2>
+              </div>
+              <p className="text-[11px] font-semibold text-emerald-800">{certData.legal_framework}</p>
+              <p className="font-mono text-[11px] font-bold text-slate-700 mt-1">CERT ID: {certData.certificate_id}</p>
+            </div>
+
+            {/* Guardian & Student Info */}
+            <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex flex-col gap-1.5 text-ink-800">
+              <div>
+                <span className="font-bold">Guardian Name:</span> {certData.guardian?.name} ({certData.guardian?.phone})
+              </div>
+              <div>
+                <span className="font-bold">Linked Minor(s):</span>{" "}
+                {certData.linked_students?.map((s) => `${s.student_name} (${s.admission_no})`).join(", ") || "None"}
+              </div>
+              <div>
+                <span className="font-bold">Issued Date:</span> {new Date(certData.issued_at).toLocaleString()}
+              </div>
+            </div>
+
+            {/* Granular Consent Matrix */}
+            <div>
+              <h4 className="font-bold text-ink-900 mb-2">GRANULAR CONSENT AUDIT TRAIL:</h4>
+              <div className="flex flex-col gap-2">
+                {certData.consent_records?.length === 0 ? (
+                  <p className="text-slate-500 italic">No granular consent records logged yet.</p>
+                ) : (
+                  certData.consent_records?.map((rec, i) => (
+                    <div key={i} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-lg border text-xs">
+                      <div>
+                        <p className="font-bold text-ink-900">{rec.consent_type_display || rec.consent_type}</p>
+                        <p className="text-[10px] text-slate-500">
+                          IP: {rec.ip_address} | Version: {rec.version} | Granted:{" "}
+                          {rec.granted_at ? new Date(rec.granted_at).toLocaleDateString() : "Pending"}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
+                          rec.is_granted ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+                        }`}
+                      >
+                        {rec.is_granted ? "GRANTED" : "WITHDRAWN"}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Timeline Audit Log History */}
+            {certData.consent_history_timeline?.length > 0 && (
+              <div>
+                <h4 className="font-bold text-ink-900 mb-2 text-[11.5px]">CONSENT LIFECYCLE TIMELINE (IMMUTABLE LOGS):</h4>
+                <div className="flex flex-col gap-1.5 max-h-36 overflow-y-auto pr-1">
+                  {certData.consent_history_timeline.map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-slate-100 border text-[11px]">
+                      <span className="font-semibold text-slate-800">{item.action}</span>
+                      <span className="text-[10px] text-slate-500 font-mono">
+                        {new Date(item.timestamp).toLocaleString()} ({item.ip_address})
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between border-t pt-4 mt-2">
+              <div className="flex items-center gap-2 font-mono text-[10px] text-slate-500 bg-slate-50 p-2 rounded-lg border">
+                <QrCode size={22} className="text-emerald-700" />
+                <div>
+                  <p className="font-bold text-emerald-900">DPDP Cryptographic Audit Trail</p>
+                  <p>{certData.verification_status}</p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => window.print()}
+                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3.5 py-2 rounded-lg transition"
+              >
+                <Printer size={14} /> Print Certificate
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:6699/api/}
+        VITE_API_URL: ${VITE_API_URL:-https://vidyam.co.in/api/}
     ports:
       - "9966:80"
     restart: always

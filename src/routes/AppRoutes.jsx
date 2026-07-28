@@ -47,10 +47,14 @@ import ParentFeedback from "../features/feedback/pages/ParentFeedback";
 import SyllabusProgress from "../features/academics/pages/SyllabusProgress";
 import StudyNotes from "../features/notes/pages/StudyNotes";
 
+import Infirmary from "../features/hr/pages/Infirmary";
+import TransferCertificates from "../features/students/pages/TransferCertificates";
+import LandingPage from "../pages/LandingPage";
+
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
@@ -92,6 +96,8 @@ const AppRoutes = () => {
             <Route path="feedback" element={<ParentFeedback />} />
             <Route path="hr/leave" element={<LeaveRequests />} />
             <Route path="hr/attendance" element={<StaffAttendance />} />
+            <Route path="infirmary" element={<Infirmary />} />
+            <Route path="transfer-certificates" element={<TransferCertificates />} />
 
 
 

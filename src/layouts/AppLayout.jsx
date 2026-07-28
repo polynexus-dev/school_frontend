@@ -25,8 +25,22 @@ const AppLayout = () => {
         <header className="h-[64px] shrink-0 bg-cn-surface border-b border-cn-border flex items-center px-6">
           <Navbar onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)} />
         </header>
-        <main className="flex-1 overflow-y-auto px-8 py-7 md:pb-24 bg-cn-bg">
-          <Outlet />
+        <main className="flex-1 overflow-y-auto px-8 py-7 bg-cn-bg flex flex-col justify-between">
+          <div className="flex-1">
+            <Outlet />
+          </div>
+          <footer className="mt-12 pt-6 border-t border-cn-border text-center text-xs text-slate-500 dark:text-slate-400">
+            © {new Date().getFullYear()} VIDYAM. A product of{" "}
+            <a
+              href="https://polynexus.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-violet-600 dark:text-violet-400 hover:underline font-medium"
+            >
+              polynexus.in
+            </a>
+            . All rights reserved.
+          </footer>
         </main>
       </div>
 

@@ -47,6 +47,15 @@ const Timetable = () => {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
 
+  // Substitute Allocator Modal state
+  const [subModalOpen, setSubModalOpen] = useState(false);
+  const [subDate, setSubDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [subAbsentTeacher, setSubAbsentTeacher] = useState("");
+  const [subSuggestions, setSubSuggestions] = useState([]);
+  const [subSelections, setSubSelections] = useState({});
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [confirmingSubstitutes, setConfirmingSubstitutes] = useState(false);
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -166,6 +175,72 @@ const Timetable = () => {
     }
   };
 
+  const handleFetchSuggestions = async () => {
+    if (!subDate || !subAbsentTeacher) {
+      toast.error("Please select both a date and an absent teacher.");
+      return;
+    }
+    setLoadingSuggestions(true);
+    try {
+      const res = await timetableService.getSubstituteSuggestions({
+        date: subDate,
+        absent_teacher_id: subAbsentTeacher,
+      });
+      const items = res.data?.suggestions || [];
+      setSubSuggestions(items);
+
+      const initialSel = {};
+      items.forEach((item) => {
+        if (item.recommended_substitutes && item.recommended_substitutes.length > 0) {
+          initialSel[item.timetable_slot_id] = String(item.recommended_substitutes[0].teacher_id);
+        }
+      });
+      setSubSelections(initialSel);
+      if (items.length === 0) {
+        toast.info("No timetable slots found for this teacher on the selected date.");
+      }
+    } catch (err) {
+      console.error("Failed to fetch substitute suggestions:", err);
+      toast.error("Failed to fetch suggestions.");
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  };
+
+  const handleConfirmSubstitutes = async () => {
+    const assignments = Object.entries(subSelections)
+      .filter(([_, teacherId]) => Boolean(teacherId))
+      .map(([slotId, teacherId]) => ({
+        timetable_slot_id: Number(slotId),
+        substitute_teacher_id: Number(teacherId),
+        reason_notes: "Automated substitute allocation",
+      }));
+
+    if (assignments.length === 0) {
+      toast.error("No substitute teachers selected.");
+      return;
+    }
+
+    setConfirmingSubstitutes(true);
+    try {
+      await timetableService.confirmSubstitutes({
+        date: subDate,
+        absent_teacher_id: Number(subAbsentTeacher),
+        assignments,
+      });
+      toast.success("Substitute assignments confirmed!");
+      setSubModalOpen(false);
+      setSubSuggestions([]);
+      setSubSelections({});
+      fetchSlots();
+    } catch (err) {
+      console.error("Failed to confirm substitutes:", err);
+      toast.error("Failed to confirm substitute assignments.");
+    } finally {
+      setConfirmingSubstitutes(false);
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="flex items-center gap-3 pb-4 border-b border-cn-border mb-6 flex-wrap">
@@ -176,7 +251,18 @@ const Timetable = () => {
           </p>
         </div>
         {!isStudent && (
-          <SelectBox className="w-56" label="Class & Section" fieldName="class_section" value={classSection} onChange={(e) => setClassSection(e.target.value)} options={classSectionOptions} />
+          <div className="flex items-center gap-3">
+            {isAdmin && (
+              <Button
+                variant="primary"
+                onClick={() => setSubModalOpen(true)}
+                className="bg-violet-600 hover:bg-violet-700 text-white"
+              >
+                🤖 Substitute Allocator
+              </Button>
+            )}
+            <SelectBox className="w-56" label="Class & Section" fieldName="class_section" value={classSection} onChange={(e) => setClassSection(e.target.value)} options={classSectionOptions} />
+          </div>
         )}
       </div>
 
@@ -265,6 +351,105 @@ const Timetable = () => {
                 Save
               </Button>
             </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* 🤖 Automated Substitute Teacher Allocator Modal */}
+      <Modal isOpen={subModalOpen} onClose={() => setSubModalOpen(false)} title="🤖 Automated Substitute Teacher Allocator">
+        <div className="flex flex-col gap-4 w-[650px] max-w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-violet-50/60 p-3.5 rounded-xl border border-violet-100">
+            <div>
+              <label className="block text-xs font-semibold text-ink-600 mb-1">Target Date</label>
+              <input
+                type="date"
+                value={subDate}
+                onChange={(e) => setSubDate(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-xs font-medium text-ink-900 outline-none focus:border-violet-500"
+              />
+            </div>
+            <div>
+              <SelectBox
+                label="Absent Teacher"
+                fieldName="absent_teacher"
+                value={subAbsentTeacher}
+                onChange={(e) => setSubAbsentTeacher(e.target.value)}
+                options={[{ label: "— Select Teacher —", value: "" }, ...teacherOptions]}
+              />
+            </div>
+            <div className="sm:col-span-2 flex justify-end pt-1">
+              <Button
+                variant="primary"
+                onClick={handleFetchSuggestions}
+                loading={loadingSuggestions}
+                disabled={!subDate || !subAbsentTeacher}
+                className="bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold py-2 px-4"
+              >
+                ✨ Generate Ranked Substitute Recommendations
+              </Button>
+            </div>
+          </div>
+
+          {/* Suggestions List */}
+          {subSuggestions.length > 0 && (
+            <div className="flex flex-col gap-3 max-h-[380px] overflow-y-auto pr-1">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-ink-400">
+                Impacted Timetable Periods ({subSuggestions.length})
+              </h3>
+              {subSuggestions.map((item) => (
+                <div key={item.timetable_slot_id} className="p-3.5 rounded-xl border border-cn-border bg-cn-surface flex flex-col gap-2">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-violet-100 text-violet-800">
+                      Period {item.period_number} ({item.start_time.slice(0, 5)} - {item.end_time.slice(0, 5)})
+                    </span>
+                    <span className="text-xs font-semibold text-ink-700">
+                      {item.class_section_name} — <span className="text-violet-700 font-bold">{item.subject_name}</span>
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-medium text-ink-500 mb-1">Assigned Substitute Teacher</label>
+                    <select
+                      value={subSelections[item.timetable_slot_id] || ""}
+                      onChange={(e) => setSubSelections((prev) => ({ ...prev, [item.timetable_slot_id]: e.target.value }))}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg bg-white text-xs font-semibold text-ink-900 outline-none focus:border-violet-500"
+                    >
+                      <option value="">-- No Substitute Assigned --</option>
+                      {item.recommended_substitutes.map((candidate, idx) => (
+                        <option key={candidate.teacher_id} value={String(candidate.teacher_id)}>
+                          #{idx + 1} {candidate.teacher_name} ({candidate.score} pts) — {candidate.reasons.join(", ")}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Top Candidate Highlight Tag */}
+                  {item.recommended_substitutes.length > 0 && (
+                    <div className="bg-emerald-50 text-emerald-800 text-[11px] p-2 rounded-lg border border-emerald-200">
+                      <span className="font-bold">Top Recommendation:</span> {item.recommended_substitutes[0].teacher_name}{" "}
+                      <span className="font-extrabold text-emerald-900">({item.recommended_substitutes[0].score} pts)</span> —{" "}
+                      {item.recommended_substitutes[0].reasons.join(" • ")}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-3 justify-end pt-3 border-t border-cn-border">
+            <Button variant="outline" onClick={() => setSubModalOpen(false)}>
+              Cancel
+            </Button>
+            {subSuggestions.length > 0 && (
+              <Button
+                variant="primary"
+                onClick={handleConfirmSubstitutes}
+                loading={confirmingSubstitutes}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+              >
+                ✅ Confirm All Substitutions
+              </Button>
+            )}
           </div>
         </div>
       </Modal>
