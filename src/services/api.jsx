@@ -16,23 +16,37 @@ export const getSubdomainTenant = () => {
 
 export const getBaseURL = () => {
   let envUrl = import.meta.env.VITE_API_URL;
+  const isBrowser = typeof window !== "undefined" && window.location.hostname;
+  const isHttps = isBrowser && window.location.protocol === "https:";
+  const hostname = isBrowser ? window.location.hostname : "127.0.0.1";
+  const isLocal = hostname === "localhost" || hostname === "127.0.0.1";
+
   if (envUrl && envUrl.trim()) {
     let url = envUrl.trim();
     if (!url.endsWith("/")) url += "/";
+
+    // If deployed on a production domain (e.g. vidyam.co.in), ignore raw IP VITE_API_URL baked in at build time
+    const isEnvIp = /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(url);
+    if (!isLocal && isEnvIp) {
+      const protocol = isHttps ? "https:" : "http:";
+      return `${protocol}//${hostname}/api/`;
+    }
+
     // Auto-upgrade http:// to https:// if page is loaded over HTTPS to avoid (blocked:mixed-content)
-    if (typeof window !== "undefined" && window.location.protocol === "https:" && url.startsWith("http://")) {
+    if (isHttps && url.startsWith("http://")) {
       url = url.replace("http://", "https://");
     }
     return url;
   }
-  if (typeof window !== "undefined" && window.location.hostname) {
-    const protocol = window.location.protocol || "http:";
-    const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+
+  if (isBrowser) {
+    const protocol = isHttps ? "https:" : "http:";
     if (isLocal) {
-      return `${protocol}//${window.location.hostname}:8000/api/`;
+      return `${protocol}//${hostname}:8000/api/`;
     }
-    return `${protocol}//${window.location.hostname}/api/`;
+    return `${protocol}//${hostname}/api/`;
   }
+
   return "http://127.0.0.1:8000/api/";
 };
 
@@ -76,11 +90,13 @@ const flushQueue = (error) => {
   pendingQueue = [];
 };
 
+const PUBLIC_PATHS = ["/", "/login", "/forgot-password", "/reset-password"];
+
 const clearSessionAndRedirect = () => {
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
   localStorage.removeItem("tenantSchema");
-  if (window.location.pathname !== "/login") {
+  if (!PUBLIC_PATHS.includes(window.location.pathname)) {
     window.location.href = "/login";
   }
 };
