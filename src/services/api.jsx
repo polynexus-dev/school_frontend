@@ -16,23 +16,35 @@ export const getSubdomainTenant = () => {
 
 export const getBaseURL = () => {
   let envUrl = import.meta.env.VITE_API_URL;
+
   const isBrowser = typeof window !== "undefined" && window.location.hostname;
   const isHttps = isBrowser && window.location.protocol === "https:";
   const hostname = isBrowser ? window.location.hostname : "127.0.0.1";
-  const isLocal = hostname === "localhost" || hostname === "127.0.0.1";
+
+  // Identify local hostnames & private network IPs (e.g. 192.168.x.x, 10.x.x.x, 127.0.0.1, localhost)
+  const isPrivateIp = /^192\.168\.|^10\.|^172\.(1[6-9]|2[0-9]|3[01])\.|^127\./.test(hostname);
+  const isLocalHost = hostname === "localhost" || hostname.endsWith(".localhost") || isPrivateIp;
 
   if (envUrl && envUrl.trim()) {
     let url = envUrl.trim();
     if (!url.endsWith("/")) url += "/";
 
-    // If deployed on a production domain (e.g. vidyam.co.in), ignore raw IP VITE_API_URL baked in at build time
-    const isEnvIp = /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(url);
-    if (!isLocal && isEnvIp) {
+    const isEnvIpOrDevPort = /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/.test(url) || url.includes(":8000");
+
+    // If accessed on a domain (e.g. vidyam.co.in or demo.vidyam.co.in), IGNORE raw IP / :8000 VITE_API_URL from local .env
+    if (!isLocalHost && isEnvIpOrDevPort) {
       const protocol = isHttps ? "https:" : "http:";
       return `${protocol}//${hostname}/api/`;
     }
 
-    // Auto-upgrade http:// to https:// if page is loaded over HTTPS to avoid (blocked:mixed-content)
+    // Dev server on port 8000 ONLY supports HTTP. Force http:// if targeting :8000
+    if (url.includes(":8000")) {
+      url = url.replace("https://", "http://");
+
+      return url;
+    }
+
+    // If page is loaded over HTTPS, handle protocol compatibility:
     if (isHttps && url.startsWith("http://")) {
       url = url.replace("http://", "https://");
     }
@@ -40,10 +52,10 @@ export const getBaseURL = () => {
   }
 
   if (isBrowser) {
-    const protocol = isHttps ? "https:" : "http:";
-    if (isLocal) {
-      return `${protocol}//${hostname}:8000/api/`;
+    if (isLocalHost) {
+      return isHttps ? "/api/" : `http://${hostname}:8000/api/`;
     }
+    const protocol = isHttps ? "https:" : "http:";
     return `${protocol}//${hostname}/api/`;
   }
 

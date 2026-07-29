@@ -127,17 +127,43 @@ const Sidebar = ({ onClose }) => {
         <nav className="flex flex-col gap-1 pt-4 overflow-y-auto custom-scrollbar">
           {navItems
             .filter((item) => {
+              const delegatedModules = profile?.delegated_modules || [];
+              // Map sidebar labels → backend module codes for delegated permission checks
+              const labelToModuleMap = {
+                "Attendance": "attendance",
+                "Fees": "fees",
+                "Gate Passes": "gate_passes",
+                "Visitor Log": "gate_passes",
+                "Certificates": "certificates",
+                "Transfer Certificates": "transfer_certificates",
+                "Infirmary": "infirmary",
+                "Inventory": "inventory",
+                "Leave": "leave",
+                "Staff Attendance": "staff_attendance",
+                "Transport": "transport",
+                "Announcements": "announcements",
+                "Reports": "reports",
+                "PTM": "ptm",
+                "Library": "library",
+              };
+
+              // If this module has been delegated to the user, always show it
+              const moduleCode = labelToModuleMap[item.label];
+              if (moduleCode && delegatedModules.includes(moduleCode)) {
+                return true;
+              }
+
               if (roleName === "Parent") {
                 return ["Dashboard", "Homework", "Timetable", "Report Cards", "Messages", "PTM", "Calendar", "Documents", "Attendance", "Transport", "Fees", "Announcements", "Notifications"].includes(item.label);
               }
               if (roleName === "Teacher") {
-                return ["Dashboard", "Students", "Paper Setting", "Homework", "Timetable", "Report Cards", "Messages", "PTM", "Library", "Gate Passes", "Calendar", "Documents", "Reports", "Attendance", "Transport", "Announcements", "Notifications", "Leave", "Staff Attendance"].includes(item.label);
+                return ["Dashboard", "Students", "Syllabus Progress", "Study Notes", "Paper Setting", "Homework", "Timetable", "Report Cards", "Messages", "Principal Feedback", "PTM", "Library", "Hostel", "Visitor Log", "Gate Passes", "Calendar", "Documents", "Certificates", "Transfer Certificates", "Infirmary", "Reports", "Leave", "Staff Attendance", "Attendance", "Transport", "Announcements", "Notifications", "Settings"].includes(item.label);
               }
               if (roleName === "Conductor") {
-                return ["Dashboard", "Transport", "Announcements", "Notifications", "Leave", "Staff Attendance", "Calendar", "Documents"].includes(item.label);
+                return ["Dashboard", "Transport", "Announcements", "Notifications", "Leave", "Staff Attendance", "Calendar", "Documents", "Settings"].includes(item.label);
               }
               if (roleName === "Student") {
-                return ["Dashboard", "Homework", "Timetable", "Report Cards", "Attendance", "Announcements", "Calendar", "Documents", "Notifications"].includes(item.label);
+                return ["Dashboard", "Homework", "Timetable", "Report Cards", "Attendance", "Announcements", "Calendar", "Documents", "Notifications", "Settings"].includes(item.label);
               }
               // Chain Dashboard spans schools, not scoped to one — only the
               // chain-owning SaaS Admin should see it, not per-school staff.

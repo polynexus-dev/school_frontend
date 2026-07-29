@@ -30,12 +30,19 @@ const deleteSyllabusTopic = async (id) => {
   return { status: response.status, data: response.data };
 };
 
+// POST /api/academics/syllabus-topics/copy-syllabus/
+const copySyllabus = async (payload) => {
+  const response = await api.post("academics/syllabus-topics/copy-syllabus/", payload);
+  return { status: response.status, data: response.data };
+};
+
 const syllabusService = {
   getSyllabusTopics,
   getProgressSummary,
   createSyllabusTopic,
   updateSyllabusTopic,
   deleteSyllabusTopic,
+  copySyllabus,
 };
 
 export default syllabusService;

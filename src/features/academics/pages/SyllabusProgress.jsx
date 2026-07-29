@@ -11,6 +11,7 @@ import {
   Filter,
   Layers,
   Calendar,
+  Copy,
 } from "lucide-react";
 import Button from "../../../components/Button";
 import Modal from "../../../components/Modal";
@@ -63,6 +64,15 @@ const SyllabusProgress = () => {
     target_completion_date: "",
     description: "",
   });
+
+  // Copy Syllabus Modal
+  const [showCopyModal, setShowCopyModal] = useState(false);
+  const [copyForm, setCopyForm] = useState({
+    source_class_section_id: "",
+    target_class_section_id: "",
+    subject_id: "",
+  });
+  const [copying, setCopying] = useState(false);
 
   const loadClassesAndSubjects = async () => {
     try {
@@ -169,6 +179,35 @@ const SyllabusProgress = () => {
     }
   };
 
+  const handleCopySyllabusSubmit = async () => {
+    if (!copyForm.source_class_section_id || !copyForm.target_class_section_id) {
+      toast.error("Please select both source and target class sections.");
+      return;
+    }
+    if (String(copyForm.source_class_section_id) === String(copyForm.target_class_section_id)) {
+      toast.error("Source and target class sections must be different.");
+      return;
+    }
+
+    setCopying(true);
+    try {
+      const res = await syllabusService.copySyllabus({
+        source_class_section_id: Number(copyForm.source_class_section_id),
+        target_class_section_id: Number(copyForm.target_class_section_id),
+        subject_id: copyForm.subject_id ? Number(copyForm.subject_id) : undefined,
+      });
+
+      toast.success(res.data.message || "Syllabus copied successfully!");
+      setShowCopyModal(false);
+      loadProgressData();
+    } catch (err) {
+      console.error("Failed to copy syllabus:", err);
+      toast.error(err.response?.data?.detail || "Failed to copy syllabus topics.");
+    } finally {
+      setCopying(false);
+    }
+  };
+
   const classOptions = classSections.map((cs) => ({
     label: cs.display_name || `Class ${cs.grade_level}-${cs.section_name}`,
     value: String(cs.id),
@@ -214,12 +253,32 @@ const SyllabusProgress = () => {
           <p className="text-ink-500 text-[13px] mt-1">Real-time syllabus completion status and unit coverage tracking</p>
         </div>
         {canEdit && (
-          <Button variant="primary" icon={<Plus size={16} />} onClick={() => {
-            setAddForm((p) => ({ ...p, class_section: selectedClass }));
-            setShowAddModal(true);
-          }}>
-            Add Syllabus Topic
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              icon={<Copy size={15} />}
+              onClick={() => {
+                setCopyForm({
+                  source_class_section_id: selectedClass || (classSections[0]?.id ? String(classSections[0].id) : ""),
+                  target_class_section_id: "",
+                  subject_id: selectedSubject || "",
+                });
+                setShowCopyModal(true);
+              }}
+            >
+              Copy Syllabus to Class
+            </Button>
+            <Button
+              variant="primary"
+              icon={<Plus size={16} />}
+              onClick={() => {
+                setAddForm((p) => ({ ...p, class_section: selectedClass }));
+                setShowAddModal(true);
+              }}
+            >
+              Add Syllabus Topic
+            </Button>
+          </div>
         )}
       </div>
 
@@ -514,6 +573,51 @@ const SyllabusProgress = () => {
             </Button>
             <Button variant="primary" onClick={handleCreateTopic} loading={saving}>
               Create Topic
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Copy Syllabus Modal */}
+      <Modal isOpen={showCopyModal} onClose={() => setShowCopyModal(false)} title="Copy Syllabus to Another Class">
+        <div className="flex flex-col gap-4 w-[420px] max-w-full">
+          <div className="p-3 bg-violet-50 border border-violet-200 rounded-xl text-xs text-violet-900 leading-relaxed">
+            Copying syllabus topics allows you to replicate curriculum units (e.g. from <strong>Class 1-A</strong> to <strong>Class 1-B</strong>) without re-typing them. Initial completion progress for the target class will start at 0%.
+          </div>
+
+          <SelectBox
+            label="Source Class Section (Copy FROM) *"
+            fieldName="source_class_section_id"
+            value={copyForm.source_class_section_id}
+            onChange={(e) => setCopyForm((p) => ({ ...p, source_class_section_id: e.target.value }))}
+            options={[{ label: "Select Source Class", value: "" }, ...classOptions]}
+          />
+
+          <SelectBox
+            label="Subject (Optional - Leave empty for all subjects)"
+            fieldName="subject_id"
+            value={copyForm.subject_id}
+            onChange={(e) => setCopyForm((p) => ({ ...p, subject_id: e.target.value }))}
+            options={[{ label: "All Subjects", value: "" }, ...subjectOptions]}
+          />
+
+          <SelectBox
+            label="Target Class Section (Copy TO) *"
+            fieldName="target_class_section_id"
+            value={copyForm.target_class_section_id}
+            onChange={(e) => setCopyForm((p) => ({ ...p, target_class_section_id: e.target.value }))}
+            options={[
+              { label: "Select Target Class", value: "" },
+              ...classOptions.filter((c) => c.value !== String(copyForm.source_class_section_id)),
+            ]}
+          />
+
+          <div className="flex gap-2 justify-end pt-3 border-t border-cn-border">
+            <Button variant="outline" onClick={() => setShowCopyModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleCopySyllabusSubmit} loading={copying}>
+              Copy &amp; Apply Syllabus
             </Button>
           </div>
         </div>
