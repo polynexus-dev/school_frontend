@@ -1,8 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import SidebarItem from "./SidebarItem";
 import useUser from "../../features/auth/hooks/useUser";
-import Logo from "../../assets/campusnexus_logo.svg";
 import {
   X,
   LayoutDashboard,
@@ -35,50 +33,106 @@ import {
   FileBarChart2,
   HeartPulse,
   FileCheck,
+  ChevronDown,
+  ChevronRight,
+  ShieldCheck,
 } from "lucide-react";
 import VidyamLogoMark from "../../components/common/VidyamLogo";
 
-// Matches Admin Web.dc.html's flat nav: Dashboard / Students / Parents &
-// Linking / Attendance / Transport / Fees / Announcements / Settings.
-// Face registration + Promote class live under Students (not separate nav
-// items) — same as every Admin Web screen highlighting "Students" for those
-// two sub-flows.
-const navItems = [
-  { label: "Dashboard", path: "/dashboard", icon: <LayoutDashboard size={17} /> },
-  { label: "Students", path: "/students", icon: <GraduationCap size={17} />, matchPrefix: true },
-  { label: "Syllabus Progress", path: "/syllabus-progress", icon: <BookCheck size={17} /> },
-  { label: "Study Notes", path: "/study-notes", icon: <FileText size={17} /> },
-  { label: "Paper Setting", path: "/paper-setting", icon: <ClipboardList size={17} />, matchPrefix: true },
-  { label: "Homework", path: "/homework", icon: <BookOpen size={17} /> },
-
-
-  { label: "Timetable", path: "/timetable", icon: <CalendarDays size={17} /> },
-  { label: "Report Cards", path: "/report-cards", icon: <FileText size={17} /> },
-  { label: "Messages", path: "/messages", icon: <MessageSquare size={17} /> },
-  { label: "Principal Feedback", path: "/feedback", icon: <MessageSquareWarning size={17} /> },
-  { label: "PTM", path: "/ptm", icon: <CalendarClock size={17} /> },
-  { label: "Library", path: "/library", icon: <LibraryIcon size={17} /> },
-  { label: "Hostel", path: "/hostel", icon: <Hotel size={17} /> },
-  { label: "Visitor Log", path: "/visitors", icon: <UserPlus size={17} /> },
-  { label: "Gate Passes", path: "/gate-passes", icon: <DoorOpen size={17} /> },
-  { label: "Calendar", path: "/calendar", icon: <CalendarDays size={17} /> },
-  { label: "Documents", path: "/documents", icon: <FolderOpen size={17} /> },
-  { label: "Certificates", path: "/certificates", icon: <Award size={17} /> },
-  { label: "Transfer Certificates", path: "/transfer-certificates", icon: <FileCheck size={17} /> },
-  { label: "Infirmary", path: "/infirmary", icon: <HeartPulse size={17} /> },
-  { label: "Inventory", path: "/inventory", icon: <Boxes size={17} /> },
-  { label: "Reports", path: "/reports", icon: <FileBarChart2 size={17} /> },
-  { label: "Chain Dashboard", path: "/chain-dashboard", icon: <Building2 size={17} /> },
-  { label: "Leave", path: "/hr/leave", icon: <ClipboardCheck size={17} /> },
-  { label: "Staff Attendance", path: "/hr/attendance", icon: <UserCheck size={17} /> },
-  { label: "Parents & Linking", path: "/parents-linking", icon: <Users size={17} /> },
-  { label: "Attendance", path: "/attendance", icon: <CalendarCheck2 size={17} /> },
-  { label: "Transport", path: "/transport", icon: <Bus size={17} /> },
-  { label: "Fees", path: "/fees", icon: <Wallet size={17} /> },
-  { label: "Announcements", path: "/announcements", icon: <Megaphone size={17} /> },
-  { label: "Notifications", path: "/notifications", icon: <Bell size={17} /> },
-  { label: "Settings", path: "/settings", icon: <SettingsIcon size={17} /> },
+// Grouped Enterprise Domain Hierarchy
+const domainCategories = [
+  {
+    id: "academics",
+    label: "Academics & Teaching",
+    icon: <GraduationCap size={16} />,
+    items: [
+      { label: "Students", path: "/students", icon: <GraduationCap size={16} />, matchPrefix: true },
+      { label: "Syllabus Progress", path: "/syllabus-progress", icon: <BookCheck size={16} /> },
+      { label: "Study Notes", path: "/study-notes", icon: <FileText size={16} /> },
+      { label: "Paper Setting", path: "/paper-setting", icon: <ClipboardList size={16} />, matchPrefix: true },
+      { label: "Homework", path: "/homework", icon: <BookOpen size={16} /> },
+      { label: "Timetable", path: "/timetable", icon: <CalendarDays size={16} /> },
+      { label: "Attendance", path: "/attendance", icon: <CalendarCheck2 size={16} /> },
+      { label: "Report Cards", path: "/report-cards", icon: <FileText size={16} /> },
+    ],
+  },
+  {
+    id: "communication",
+    label: "Communication & PTM",
+    icon: <MessageSquare size={16} />,
+    items: [
+      { label: "Messages", path: "/messages", icon: <MessageSquare size={16} /> },
+      { label: "Principal Feedback", path: "/feedback", icon: <MessageSquareWarning size={16} /> },
+      { label: "PTM Meetings", path: "/ptm", icon: <CalendarClock size={16} /> },
+      { label: "Announcements", path: "/announcements", icon: <Megaphone size={16} /> },
+      { label: "Calendar", path: "/calendar", icon: <CalendarDays size={16} /> },
+      { label: "Notifications", path: "/notifications", icon: <Bell size={16} /> },
+    ],
+  },
+  {
+    id: "safety",
+    label: "Campus Safety & Gate",
+    icon: <ShieldCheck size={16} />,
+    items: [
+      { label: "Visitor Log", path: "/visitors", icon: <UserPlus size={16} /> },
+      { label: "Gate Passes", path: "/gate-passes", icon: <DoorOpen size={16} /> },
+    ],
+  },
+  {
+    id: "operations",
+    label: "Operations & Facilities",
+    icon: <Building2 size={16} />,
+    items: [
+      { label: "Transport & GPS", path: "/transport", icon: <Bus size={16} /> },
+      { label: "Fees & Collections", path: "/fees", icon: <Wallet size={16} /> },
+      { label: "Parents & Linking", path: "/parents-linking", icon: <Users size={16} /> },
+      { label: "Library System", path: "/library", icon: <LibraryIcon size={16} /> },
+      { label: "Hostel Occupancy", path: "/hostel", icon: <Hotel size={16} /> },
+      { label: "Infirmary & CWSN", path: "/infirmary", icon: <HeartPulse size={16} /> },
+      { label: "Inventory Log", path: "/inventory", icon: <Boxes size={16} /> },
+      { label: "Documents Vault", path: "/documents", icon: <FolderOpen size={16} /> },
+      { label: "Certificates", path: "/certificates", icon: <Award size={16} /> },
+      { label: "Transfer Certificates", path: "/transfer-certificates", icon: <FileCheck size={16} /> },
+    ],
+  },
+  {
+    id: "hr",
+    label: "HR & Staff Governance",
+    icon: <UserCheck size={16} />,
+    items: [
+      { label: "Staff Attendance", path: "/hr/attendance", icon: <UserCheck size={16} /> },
+      { label: "Staff Leave Requests", path: "/hr/leave", icon: <ClipboardCheck size={16} /> },
+      { label: "Chain Dashboard", path: "/chain-dashboard", icon: <Building2 size={16} /> },
+    ],
+  },
+  {
+    id: "reports",
+    label: "Reports & Compliance",
+    icon: <FileBarChart2 size={16} />,
+    items: [
+      { label: "Executive Reports", path: "/reports", icon: <FileBarChart2 size={16} /> },
+      { label: "Board Compliance", path: "/reports/board-compliance", icon: <FileCheck size={16} /> },
+    ],
+  },
 ];
+
+const labelToModuleMap = {
+  "Attendance": "attendance",
+  "Fees & Collections": "fees",
+  "Gate Passes": "gate_passes",
+  "Visitor Log": "gate_passes",
+  "Certificates": "certificates",
+  "Transfer Certificates": "transfer_certificates",
+  "Infirmary & CWSN": "infirmary",
+  "Inventory Log": "inventory",
+  "Staff Leave Requests": "leave",
+  "Staff Attendance": "staff_attendance",
+  "Transport & GPS": "transport",
+  "Announcements": "announcements",
+  "Executive Reports": "reports",
+  "PTM Meetings": "ptm",
+  "Library System": "library",
+};
 
 const Sidebar = ({ onClose }) => {
   const navigate = useNavigate();
@@ -86,8 +140,6 @@ const Sidebar = ({ onClose }) => {
   const { user } = useUser();
 
   const profile = user?.data;
-  // /profile/ nests user fields under `profile.user` (see UserProfileView) —
-  // there's no top-level full_name/first_name/username on the profile itself.
   const fullName =
     profile?.full_name ||
     [profile?.user?.first_name, profile?.user?.last_name].filter(Boolean).join(" ") ||
@@ -102,18 +154,71 @@ const Sidebar = ({ onClose }) => {
     .toUpperCase()
     .slice(0, 2) || "SA";
 
+  const delegatedModules = profile?.delegated_modules || [];
+
+  // Filter items based on user role and permissions
+  const isItemVisible = (item) => {
+    const moduleCode = labelToModuleMap[item.label];
+    if (moduleCode && delegatedModules.includes(moduleCode)) {
+      return true;
+    }
+    if (roleName === "Parent") {
+      return ["Dashboard", "Homework", "Timetable", "Report Cards", "Messages", "PTM Meetings", "Calendar", "Documents Vault", "Attendance", "Transport & GPS", "Fees & Collections", "Announcements", "Notifications"].includes(item.label);
+    }
+    if (roleName === "Teacher") {
+      return ["Dashboard", "Students", "Syllabus Progress", "Study Notes", "Paper Setting", "Homework", "Timetable", "Report Cards", "Messages", "Principal Feedback", "PTM Meetings", "Library System", "Hostel Occupancy", "Visitor Log", "Gate Passes", "Calendar", "Documents Vault", "Certificates", "Transfer Certificates", "Infirmary & CWSN", "Executive Reports", "Board Compliance", "Staff Leave Requests", "Staff Attendance", "Attendance", "Transport & GPS", "Announcements", "Notifications", "Settings"].includes(item.label);
+    }
+    if (roleName === "Conductor") {
+      return ["Dashboard", "Transport & GPS", "Announcements", "Notifications", "Staff Leave Requests", "Staff Attendance", "Calendar", "Documents Vault", "Settings"].includes(item.label);
+    }
+    if (roleName === "Student") {
+      return ["Dashboard", "Homework", "Timetable", "Report Cards", "Attendance", "Announcements", "Calendar", "Documents Vault", "Notifications", "Settings"].includes(item.label);
+    }
+    if (item.label === "Chain Dashboard") {
+      return roleName === "SaaS Admin";
+    }
+    return true;
+  };
+
+  // Determine active category based on current URL path
+  const getActiveCategoryId = () => {
+    for (const cat of domainCategories) {
+      if (cat.items.some((item) => item.matchPrefix ? location.pathname.startsWith(item.path) : location.pathname === item.path)) {
+        return cat.id;
+      }
+    }
+    return null;
+  };
+
+  const [expandedCategories, setExpandedCategories] = useState(() => {
+    const activeCatId = getActiveCategoryId();
+    return activeCatId ? { [activeCatId]: true } : { academics: true };
+  });
+
+  useEffect(() => {
+    const activeCatId = getActiveCategoryId();
+    if (activeCatId) {
+      setExpandedCategories((prev) => ({ ...prev, [activeCatId]: true }));
+    }
+  }, [location.pathname]);
+
+  const toggleCategory = (catId) => {
+    setExpandedCategories((prev) => ({ ...prev, [catId]: !prev[catId] }));
+  };
+
   return (
     <aside
-      className="h-full w-[240px] text-white flex flex-col justify-between p-4 px-3.5 overflow-hidden shrink-0"
-      style={{ background: "linear-gradient(180deg, #3B0764, #4C1D95)" }}
+      className="h-full w-[250px] text-white flex flex-col justify-between p-4 px-3 overflow-hidden shrink-0 shadow-xl"
+      style={{ background: "linear-gradient(180deg, #2E0854, #4C1D95)" }}
     >
       <div className="flex flex-col flex-1 overflow-hidden">
-        <div className="flex items-center gap-2.5 px-1.5 pb-5 border-b border-white/12 justify-between">
+        {/* Brand Header */}
+        <div className="flex items-center gap-2.5 px-2 pb-4 border-b border-white/10 justify-between">
           <div className="flex items-center gap-2.5 min-w-0">
-            <VidyamLogoMark size={34} />
+            <VidyamLogoMark size={32} />
             <div className="min-w-0">
-              <div className="font-heading font-bold text-[14.5px] truncate">VIDYAM</div>
-              <div className="text-white/50 text-[10.5px] font-semibold tracking-[0.06em]">SCHOOL EDITION</div>
+              <div className="font-heading font-extrabold text-[15px] tracking-wide text-white">VIDYAM</div>
+              <div className="text-violet-200/60 text-[10px] font-bold tracking-[0.08em] uppercase">School Operating OS</div>
             </div>
           </div>
           <button
@@ -124,84 +229,129 @@ const Sidebar = ({ onClose }) => {
           </button>
         </div>
 
-        <nav className="flex flex-col gap-1 pt-4 overflow-y-auto custom-scrollbar">
-          {navItems
-            .filter((item) => {
-              const delegatedModules = profile?.delegated_modules || [];
-              // Map sidebar labels → backend module codes for delegated permission checks
-              const labelToModuleMap = {
-                "Attendance": "attendance",
-                "Fees": "fees",
-                "Gate Passes": "gate_passes",
-                "Visitor Log": "gate_passes",
-                "Certificates": "certificates",
-                "Transfer Certificates": "transfer_certificates",
-                "Infirmary": "infirmary",
-                "Inventory": "inventory",
-                "Leave": "leave",
-                "Staff Attendance": "staff_attendance",
-                "Transport": "transport",
-                "Announcements": "announcements",
-                "Reports": "reports",
-                "PTM": "ptm",
-                "Library": "library",
-              };
+        {/* Scrollable Grouped Navigation */}
+        <nav className="flex flex-col gap-1.5 pt-3 overflow-y-auto custom-scrollbar pr-1">
+          {/* Top Anchor: Dashboard */}
+          <button
+            onClick={() => {
+              navigate("/dashboard");
+              if (onClose) onClose();
+            }}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              location.pathname === "/dashboard"
+                ? "bg-white/20 text-white shadow-md border border-white/20"
+                : "text-violet-200/80 hover:bg-white/10 hover:text-white"
+            }`}
+          >
+            <LayoutDashboard size={17} className={location.pathname === "/dashboard" ? "text-amber-300" : ""} />
+            <span>Dashboard</span>
+          </button>
 
-              // If this module has been delegated to the user, always show it
-              const moduleCode = labelToModuleMap[item.label];
-              if (moduleCode && delegatedModules.includes(moduleCode)) {
-                return true;
-              }
+          {/* Grouped Accordion Categories */}
+          {domainCategories.map((cat) => {
+            const visibleItems = cat.items.filter(isItemVisible);
+            if (visibleItems.length === 0) return null;
 
-              if (roleName === "Parent") {
-                return ["Dashboard", "Homework", "Timetable", "Report Cards", "Messages", "PTM", "Calendar", "Documents", "Attendance", "Transport", "Fees", "Announcements", "Notifications"].includes(item.label);
-              }
-              if (roleName === "Teacher") {
-                return ["Dashboard", "Students", "Syllabus Progress", "Study Notes", "Paper Setting", "Homework", "Timetable", "Report Cards", "Messages", "Principal Feedback", "PTM", "Library", "Hostel", "Visitor Log", "Gate Passes", "Calendar", "Documents", "Certificates", "Transfer Certificates", "Infirmary", "Reports", "Leave", "Staff Attendance", "Attendance", "Transport", "Announcements", "Notifications", "Settings"].includes(item.label);
-              }
-              if (roleName === "Conductor") {
-                return ["Dashboard", "Transport", "Announcements", "Notifications", "Leave", "Staff Attendance", "Calendar", "Documents", "Settings"].includes(item.label);
-              }
-              if (roleName === "Student") {
-                return ["Dashboard", "Homework", "Timetable", "Report Cards", "Attendance", "Announcements", "Calendar", "Documents", "Notifications", "Settings"].includes(item.label);
-              }
-              // Chain Dashboard spans schools, not scoped to one — only the
-              // chain-owning SaaS Admin should see it, not per-school staff.
-              if (item.label === "Chain Dashboard") {
-                return roleName === "SaaS Admin";
-              }
-              return true; // School Admin, Management, Admin, SaaS Admin
-            })
-            .map((item) => {
-              const isActive = item.matchPrefix
-                ? location.pathname.startsWith(item.path)
-                : location.pathname === item.path;
-              return (
-                <div
-                  key={item.path}
-                  onClick={() => {
-                    navigate(item.path);
-                    if (onClose) onClose();
-                  }}
+            const isExpanded = !!expandedCategories[cat.id];
+            const hasActiveChild = visibleItems.some((item) =>
+              item.matchPrefix ? location.pathname.startsWith(item.path) : location.pathname === item.path
+            );
+
+            return (
+              <div key={cat.id} className="rounded-xl overflow-hidden transition-all">
+                {/* Category Header */}
+                <button
+                  onClick={() => toggleCategory(cat.id)}
+                  className={`w-full flex items-center justify-between px-3 py-2 text-[11.5px] font-bold tracking-wider uppercase transition-all cursor-pointer rounded-xl ${
+                    hasActiveChild
+                      ? "text-amber-300 bg-white/10"
+                      : "text-violet-200/70 hover:text-white hover:bg-white/5"
+                  }`}
                 >
-                  <SidebarItem icon={item.icon} label={item.label} active={isActive} />
-                </div>
-              );
-            })}
+                  <div className="flex items-center gap-2">
+                    <span className={hasActiveChild ? "text-amber-300" : "text-violet-300"}>{cat.icon}</span>
+                    <span className="truncate">{cat.label}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-1.5 py-0.2 text-[9px] font-extrabold rounded-full bg-white/15 text-white/90">
+                      {visibleItems.length}
+                    </span>
+                    {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                  </div>
+                </button>
+
+                {/* Sub-Items Accordion Content */}
+                {isExpanded && (
+                  <div className="flex flex-col gap-0.5 mt-1 ml-2.5 pl-2 border-l border-white/15 animate-in fade-in duration-150">
+                    {visibleItems.map((item) => {
+                      const isActive = item.matchPrefix
+                        ? location.pathname.startsWith(item.path)
+                        : location.pathname === item.path;
+
+                      return (
+                        <button
+                          key={item.path}
+                          onClick={() => {
+                            navigate(item.path);
+                            if (onClose) onClose();
+                          }}
+                          className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer text-left ${
+                            isActive
+                              ? "bg-white text-purple-950 font-bold shadow-md transform translate-x-0.5"
+                              : "text-violet-200/80 hover:bg-white/10 hover:text-white"
+                          }`}
+                        >
+                          <span className={isActive ? "text-purple-700" : "text-violet-300"}>{item.icon}</span>
+                          <span className="truncate">{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Bottom Anchor: Settings */}
+          {isItemVisible({ label: "Settings" }) && (
+            <button
+              onClick={() => {
+                navigate("/settings");
+                if (onClose) onClose();
+              }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer mt-1 ${
+                location.pathname === "/settings"
+                  ? "bg-white/20 text-white shadow-md border border-white/20"
+                  : "text-violet-200/80 hover:bg-white/10 hover:text-white"
+              }`}
+            >
+              <SettingsIcon size={17} className={location.pathname === "/settings" ? "text-amber-300" : ""} />
+              <span>Settings &amp; Policies</span>
+            </button>
+          )}
         </nav>
       </div>
 
-      <div className="rounded-2xl bg-white/8 p-3 flex items-center gap-2.5 shrink-0">
+      {/* User Footer Card */}
+      <div className="rounded-2xl bg-white/10 backdrop-blur-md p-3 flex items-center gap-2.5 shrink-0 border border-white/10 mt-2">
         <div
-          className="w-8 h-8 rounded-[10px] flex items-center justify-center font-bold text-[13px] shrink-0"
+          className="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-[13px] shrink-0 text-white shadow-sm"
           style={{ background: "linear-gradient(135deg, #7C3AED, #A78BFA)" }}
         >
           {initials}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-[12.5px] font-bold truncate">{fullName}</div>
-          <div className="text-white/50 text-[10.5px] truncate">
-            {roleName === 'Parent' ? 'Parent Portal' : roleName === 'Teacher' ? 'Teacher Portal' : roleName === 'Conductor' ? 'Conductor Portal' : roleName === 'Student' ? 'Student Portal' : `School Office · ${roleName}`}
+          <div className="text-[12px] font-bold truncate text-white">{fullName}</div>
+          <div className="text-violet-200/60 text-[10px] truncate font-medium">
+            {roleName === "Parent"
+              ? "Parent Portal"
+              : roleName === "Teacher"
+              ? "Teacher Portal"
+              : roleName === "Conductor"
+              ? "Conductor Portal"
+              : roleName === "Student"
+              ? "Student Portal"
+              : `School Office · ${roleName}`}
           </div>
         </div>
       </div>

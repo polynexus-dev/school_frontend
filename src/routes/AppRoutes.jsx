@@ -49,7 +49,9 @@ import StudyNotes from "../features/notes/pages/StudyNotes";
 
 import Infirmary from "../features/hr/pages/Infirmary";
 import TransferCertificates from "../features/students/pages/TransferCertificates";
+import BoardCompliance from "../features/reports/pages/BoardCompliance";
 import LandingPage from "../pages/LandingPage";
+
 
 const AppRoutes = () => {
   return (
@@ -93,6 +95,8 @@ const AppRoutes = () => {
             <Route path="certificates" element={<Certificates />} />
             <Route path="inventory" element={<Inventory />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="reports/board-compliance" element={<BoardCompliance />} />
+
             <Route path="feedback" element={<ParentFeedback />} />
             <Route path="hr/leave" element={<LeaveRequests />} />
             <Route path="hr/attendance" element={<StaffAttendance />} />

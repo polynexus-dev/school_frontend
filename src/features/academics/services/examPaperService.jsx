@@ -40,6 +40,32 @@ const finalizePaper = async (id) => {
   return { status: response.status, data: response.data };
 };
 
+const initSets = async (id) => {
+  const response = await api.post(`academics/exam-papers/${id}/init_sets/`, {});
+  return { status: response.status, data: response.data };
+};
+
+const lockEncryptSet = async (id, setCode, passcode) => {
+  const response = await api.post(`academics/exam-papers/${id}/lock_encrypt_set/`, {
+    set_code: setCode,
+    passcode,
+  });
+  return { status: response.status, data: response.data };
+};
+
+const unlockDecryptSet = async (id, setCode, passcode) => {
+  const response = await api.post(`academics/exam-papers/${id}/unlock_decrypt_set/`, {
+    set_code: setCode,
+    passcode,
+  });
+  return { status: response.status, data: response.data };
+};
+
+const setDistributionPolicy = async (id, policy) => {
+  const response = await api.post(`academics/exam-papers/${id}/distribution_policy/`, { policy });
+  return { status: response.status, data: response.data };
+};
+
 const examPaperService = {
   getExamPapers,
   getExamPaper,
@@ -48,6 +74,10 @@ const examPaperService = {
   generatePaper,
   getPanel,
   finalizePaper,
+  initSets,
+  lockEncryptSet,
+  unlockDecryptSet,
+  setDistributionPolicy,
 };
 
 export default examPaperService;

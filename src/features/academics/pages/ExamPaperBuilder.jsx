@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { ArrowLeft, Plus, RefreshCw, Sparkles, Lock, GraduationCap } from "lucide-react";
+import { ArrowLeft, Plus, RefreshCw, Sparkles, Lock, GraduationCap, ShieldCheck } from "lucide-react";
 import Button from "../../../components/Button";
 import Table from "../../../components/Table";
 import Modal from "../../../components/Modal";
@@ -12,6 +12,7 @@ import examTermService from "../services/examTermService";
 import classSectionService from "../../students/services/classSectionService";
 import subjectService from "../services/subjectService";
 import QuestionPickerModal from "../components/QuestionPickerModal";
+import ExamPaperSetVault from "./ExamPaperSetVault";
 
 const asList = (data) => (Array.isArray(data) ? data : data?.results || []);
 const classSectionLabel = (cs) => cs?.name || `Class ${cs?.grade ?? "?"} - ${cs?.section ?? "?"}`;
@@ -19,6 +20,7 @@ const classSectionLabel = (cs) => cs?.name || `Class ${cs?.grade ?? "?"} - ${cs?
 const ExamPaperBuilder = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState("composer"); // 'composer' | 'vault'
 
   const [paper, setPaper] = useState(null);
   const [panel, setPanel] = useState(null);
@@ -245,8 +247,36 @@ const ExamPaperBuilder = () => {
         )}
       </div>
 
-      {/* Blueprint editor */}
-      <div className="bg-cn-surface border border-cn-border rounded-2xl p-5 mb-5">
+      {/* Mode Switcher Tabs */}
+      <div className="flex items-center gap-4 mb-6 border-b border-cn-border pb-1">
+        <button
+          onClick={() => setActiveTab("composer")}
+          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
+            activeTab === "composer"
+              ? "border-violet-600 text-violet-700 font-bold"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <Sparkles size={16} /> Question Paper Composer
+        </button>
+        <button
+          onClick={() => setActiveTab("vault")}
+          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
+            activeTab === "vault"
+              ? "border-violet-600 text-violet-700 font-bold"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <ShieldCheck size={16} className="text-amber-500" /> Anti-Leak Multi-Set Vault (AES-256)
+        </button>
+      </div>
+
+      {activeTab === "vault" ? (
+        <ExamPaperSetVault paperId={id} paperData={paper} onUpdate={loadAll} />
+      ) : (
+        <>
+          {/* Blueprint editor */}
+          <div className="bg-cn-surface border border-cn-border rounded-2xl p-5 mb-5">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <h2 className="font-heading font-semibold text-[15px] text-ink-900">Blueprint — target marks per topic</h2>
           <span className={`text-[13px] font-bold ${blueprintSum === Number(paper.total_marks) ? "text-success-hex" : "text-warning-hex"}`}>
@@ -392,6 +422,8 @@ const ExamPaperBuilder = () => {
           </div>
         </div>
       </Modal>
+        </>
+      )}
     </div>
   );
 };

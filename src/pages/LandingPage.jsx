@@ -966,6 +966,9 @@ const LandingPage = () => {
     } else {
       document.documentElement.classList.remove("dark");
     }
+    return () => {
+      document.documentElement.classList.remove("dark");
+    };
   }, [darkMode]);
 
   useEffect(() => {

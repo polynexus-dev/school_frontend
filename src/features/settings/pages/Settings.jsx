@@ -149,6 +149,23 @@ const Settings = () => {
         timezone: data.timezone || "Asia/Kolkata",
         subscription_status: data.subscription_status || "active",
         billing_cycle: data.billing_cycle || "annual",
+        subscribed_modules: data.subscribed_modules || [],
+        admin_rules_config: {
+          academic_min_passing_pct: data.admin_rules_config?.academic_min_passing_pct ?? 33,
+          academic_attendance_cutoff_pct: data.admin_rules_config?.academic_attendance_cutoff_pct ?? 75,
+          attendance_late_grace_mins: data.admin_rules_config?.attendance_late_grace_mins ?? 10,
+          fees_grace_days: data.admin_rules_config?.fees_grace_days ?? 5,
+          fees_fine_per_day: data.admin_rules_config?.fees_fine_per_day ?? 50,
+          staff_substitute_max_per_day: data.admin_rules_config?.staff_substitute_max_per_day ?? 2,
+          staff_max_dept_leave_pct: data.admin_rules_config?.staff_max_dept_leave_pct ?? 15,
+          dpdp_pii_masking_enabled: data.admin_rules_config?.dpdp_pii_masking_enabled ?? true,
+          rank_privacy_enabled: data.admin_rules_config?.rank_privacy_enabled ?? true,
+          face_attendance_enabled: data.admin_rules_config?.face_attendance_enabled ?? true,
+          face_liveness_threshold_pct: data.admin_rules_config?.face_liveness_threshold_pct ?? 80,
+          face_geofence_radius_meters: data.admin_rules_config?.face_geofence_radius_meters ?? 50,
+          face_anti_spoofing_required: data.admin_rules_config?.face_anti_spoofing_required ?? true,
+        },
+
         whatsapp_gateway_mode: data.whatsapp_gateway_mode || "shared",
         whatsapp_phone_number_id: data.whatsapp_phone_number_id || "",
         whatsapp_business_account_id: data.whatsapp_business_account_id || "",
@@ -176,13 +193,15 @@ const Settings = () => {
         address: schoolData.address,
         permitted_email_domain: schoolData.permitted_email_domain,
         timezone: schoolData.timezone,
+        subscribed_modules: schoolData.subscribed_modules,
+        admin_rules_config: schoolData.admin_rules_config,
         whatsapp_gateway_mode: schoolData.whatsapp_gateway_mode,
         whatsapp_phone_number_id: schoolData.whatsapp_phone_number_id,
         whatsapp_business_account_id: schoolData.whatsapp_business_account_id,
         whatsapp_access_token: schoolData.whatsapp_access_token,
         whatsapp_api_key: schoolData.whatsapp_api_key,
       });
-      setSuccessMsg("School profile and WhatsApp gateway settings updated successfully!");
+      setSuccessMsg("School profile and administrative policy rules updated successfully!");
       setTimeout(() => setSuccessMsg(""), 4000);
     } catch (err) {
       console.error("Failed to update school profile:", err);
@@ -441,7 +460,22 @@ const Settings = () => {
             Staff Permissions Manager
           </button>
         )}
+
+        {isAdmin && (
+          <button
+            onClick={() => setActiveTab("admin_rules")}
+            className={`flex items-center gap-2 py-3 px-4 text-xs sm:text-sm font-semibold border-b-2 cursor-pointer transition-all ${
+              activeTab === "admin_rules"
+                ? "border-violet-600 text-violet-900 bg-violet-50/50 rounded-t-lg"
+                : "border-transparent text-ink-500 hover:text-ink-900"
+            }`}
+          >
+            <Sliders size={16} />
+            Policy Rules Engine
+          </button>
+        )}
       </div>
+
 
       {/* Global Alerts */}
       {successMsg && (
@@ -1195,6 +1229,415 @@ const Settings = () => {
           )}
         </div>
       )}
+
+      {/* TAB: Administrative Policy Rules Engine */}
+      {activeTab === "admin_rules" && isAdmin && (
+        <div className="bg-cn-surface border border-cn-border rounded-2xl p-6 shadow-sm animate-fadeIn">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 border-b border-cn-border mb-6 gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-violet-100 text-violet-700">
+                  SAAS GOVERNANCE ENGINE
+                </span>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 flex items-center gap-1">
+                  <ShieldCheck size={12} /> School Policy Controls Active
+                </span>
+              </div>
+              <h2 className="font-heading font-extrabold text-xl text-ink-900 mt-2 flex items-center gap-2">
+                <Sliders size={20} className="text-violet-600" />
+                School Administrative Rules &amp; Policy Engine
+              </h2>
+              <p className="text-ink-500 text-xs mt-1">
+                Configure grade passing cutoffs, attendance threshold locks, late fee fines, substitute workload caps, and DPDP privacy rules per school policy.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleSaveSchoolProfile}
+              disabled={savingSchool}
+              className="px-5 py-2.5 text-xs font-bold text-white bg-violet-600 hover:bg-violet-700 rounded-xl shadow-md flex items-center gap-2 transition-all shrink-0 cursor-pointer"
+            >
+              {savingSchool ? (
+                <>
+                  <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Saving Rules...
+                </>
+              ) : (
+                <>
+                  <Save size={15} />
+                  Save Policy Rules
+                </>
+              )}
+            </button>
+          </div>
+
+          <form onSubmit={handleSaveSchoolProfile} className="space-y-6">
+            {/* Category 1: Academic Rules */}
+            <div className="p-5 rounded-2xl bg-cn-bg border border-cn-border space-y-4">
+              <div className="flex items-center gap-2">
+                <GraduationCap size={18} className="text-violet-600" />
+                <h3 className="font-heading font-bold text-sm text-ink-900 uppercase tracking-wider">
+                  1. Academic &amp; Board Examination Policies
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-ink-700 mb-1">
+                    Minimum Subject Passing Cutoff (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="20"
+                    max="60"
+                    value={schoolData.admin_rules_config.academic_min_passing_pct}
+                    onChange={(e) =>
+                      setSchoolData((p) => ({
+                        ...p,
+                        admin_rules_config: {
+                          ...p.admin_rules_config,
+                          academic_min_passing_pct: Number(e.target.value),
+                        },
+                      }))
+                    }
+                    className="w-full px-3 py-2 text-xs bg-white border border-cn-border rounded-xl text-ink-900 font-semibold focus:ring-2 focus:ring-violet-500"
+                  />
+                  <span className="text-[11px] text-ink-400 mt-1 block">Standard CBSE/ICSE benchmark is 33%.</span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-ink-700 mb-1">
+                    CBSE / ICSE Board Hall Ticket Attendance Lock (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="60"
+                    max="90"
+                    value={schoolData.admin_rules_config.academic_attendance_cutoff_pct}
+                    onChange={(e) =>
+                      setSchoolData((p) => ({
+                        ...p,
+                        admin_rules_config: {
+                          ...p.admin_rules_config,
+                          academic_attendance_cutoff_pct: Number(e.target.value),
+                        },
+                      }))
+                    }
+                    className="w-full px-3 py-2 text-xs bg-white border border-cn-border rounded-xl text-ink-900 font-semibold focus:ring-2 focus:ring-violet-500"
+                  />
+                  <span className="text-[11px] text-ink-400 mt-1 block">Auto-flags students below cutoff for Principal waiver review.</span>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <label className="flex items-center gap-3 p-3 rounded-xl bg-white border border-cn-border cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={schoolData.admin_rules_config.rank_privacy_enabled}
+                    onChange={(e) =>
+                      setSchoolData((p) => ({
+                        ...p,
+                        admin_rules_config: {
+                          ...p.admin_rules_config,
+                          rank_privacy_enabled: e.target.checked,
+                        },
+                      }))
+                    }
+                    className="w-4 h-4 text-violet-600 rounded focus:ring-violet-500"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-ink-900 block">NEP 2020 Rank Privacy Engine</span>
+                    <span className="text-[11px] text-ink-500">Hide overall student class ranks on report cards to reduce peer pressure.</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Category 2: Attendance & Absence Rules */}
+            <div className="p-5 rounded-2xl bg-cn-bg border border-cn-border space-y-4">
+              <div className="flex items-center gap-2">
+                <Calendar size={18} className="text-violet-600" />
+                <h3 className="font-heading font-bold text-sm text-ink-900 uppercase tracking-wider">
+                  2. Attendance &amp; Absence Governance
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-ink-700 mb-1">
+                    Classroom Late Arrival Grace Buffer (Minutes)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="30"
+                    value={schoolData.admin_rules_config.attendance_late_grace_mins}
+                    onChange={(e) =>
+                      setSchoolData((p) => ({
+                        ...p,
+                        admin_rules_config: {
+                          ...p.admin_rules_config,
+                          attendance_late_grace_mins: Number(e.target.value),
+                        },
+                      }))
+                    }
+                    className="w-full px-3 py-2 text-xs bg-white border border-cn-border rounded-xl text-ink-900 font-semibold focus:ring-2 focus:ring-violet-500"
+                  />
+                  <span className="text-[11px] text-ink-400 mt-1 block">Arrivals within buffer marked "Late"; beyond buffer marked "Absent".</span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-ink-700 mb-1">
+                    Max Staff Department Leave Cap (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="5"
+                    max="50"
+                    value={schoolData.admin_rules_config.staff_max_dept_leave_pct}
+                    onChange={(e) =>
+                      setSchoolData((p) => ({
+                        ...p,
+                        admin_rules_config: {
+                          ...p.admin_rules_config,
+                          staff_max_dept_leave_pct: Number(e.target.value),
+                        },
+                      }))
+                    }
+                    className="w-full px-3 py-2 text-xs bg-white border border-cn-border rounded-xl text-ink-900 font-semibold focus:ring-2 focus:ring-violet-500"
+                  />
+                  <span className="text-[11px] text-ink-400 mt-1 block">Auto-blocks staff leave if department leave threshold is exceeded.</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Category 3: Fee Fines & Financial Rules */}
+            <div className="p-5 rounded-2xl bg-cn-bg border border-cn-border space-y-4">
+              <div className="flex items-center gap-2">
+                <Info size={18} className="text-violet-600" />
+                <h3 className="font-heading font-bold text-sm text-ink-900 uppercase tracking-wider">
+                  3. Fee Collection &amp; Late Fine Governance
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-ink-700 mb-1">
+                    Fee Payment Grace Period (Days Post-Due Date)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="30"
+                    value={schoolData.admin_rules_config.fees_grace_days}
+                    onChange={(e) =>
+                      setSchoolData((p) => ({
+                        ...p,
+                        admin_rules_config: {
+                          ...p.admin_rules_config,
+                          fees_grace_days: Number(e.target.value),
+                        },
+                      }))
+                    }
+                    className="w-full px-3 py-2 text-xs bg-white border border-cn-border rounded-xl text-ink-900 font-semibold focus:ring-2 focus:ring-violet-500"
+                  />
+                  <span className="text-[11px] text-ink-400 mt-1 block">No late fine is calculated during the grace period.</span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-ink-700 mb-1">
+                    Per-Day Late Fee Penalty Fine (₹ / Day)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="500"
+                    value={schoolData.admin_rules_config.fees_fine_per_day}
+                    onChange={(e) =>
+                      setSchoolData((p) => ({
+                        ...p,
+                        admin_rules_config: {
+                          ...p.admin_rules_config,
+                          fees_fine_per_day: Number(e.target.value),
+                        },
+                      }))
+                    }
+                    className="w-full px-3 py-2 text-xs bg-white border border-cn-border rounded-xl text-ink-900 font-semibold focus:ring-2 focus:ring-violet-500"
+                  />
+                  <span className="text-[11px] text-ink-400 mt-1 block">Daily fine added automatically after grace period expires.</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Category 4: Staff Substitute Workload Cap */}
+            <div className="p-5 rounded-2xl bg-cn-bg border border-cn-border space-y-4">
+              <div className="flex items-center gap-2">
+                <UserCheck size={18} className="text-violet-600" />
+                <h3 className="font-heading font-bold text-sm text-ink-900 uppercase tracking-wider">
+                  4. AI Substitute Workload &amp; Staff Rules
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-ink-700 mb-1">
+                    Max Substitute Periods per Teacher per Day
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="5"
+                    value={schoolData.admin_rules_config.staff_substitute_max_per_day}
+                    onChange={(e) =>
+                      setSchoolData((p) => ({
+                        ...p,
+                        admin_rules_config: {
+                          ...p.admin_rules_config,
+                          staff_substitute_max_per_day: Number(e.target.value),
+                        },
+                      }))
+                    }
+                    className="w-full px-3 py-2 text-xs bg-white border border-cn-border rounded-xl text-ink-900 font-semibold focus:ring-2 focus:ring-violet-500"
+                  />
+                  <span className="text-[11px] text-ink-400 mt-1 block">AI Substitute engine respects this cap to prevent teacher burnout.</span>
+                </div>
+
+                <div className="flex items-center">
+                  <label className="flex items-center gap-3 p-3 rounded-xl bg-white border border-cn-border cursor-pointer w-full">
+                    <input
+                      type="checkbox"
+                      checked={schoolData.admin_rules_config.dpdp_pii_masking_enabled}
+                      onChange={(e) =>
+                        setSchoolData((p) => ({
+                          ...p,
+                          admin_rules_config: {
+                            ...p.admin_rules_config,
+                            dpdp_pii_masking_enabled: e.target.checked,
+                          },
+                        }))
+                      }
+                      className="w-4 h-4 text-violet-600 rounded focus:ring-violet-500"
+                    />
+                    <div>
+                      <span className="text-xs font-bold text-ink-900 block">DPDP Staff PII Contact Masking</span>
+                      <span className="text-[11px] text-ink-500">Mask parent phone numbers &amp; addresses from general subject teachers.</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Category 5: Mobile AI Facial Attendance & Biometric Rules */}
+            <div className="p-5 rounded-2xl bg-cn-bg border border-cn-border space-y-4">
+              <div className="flex items-center gap-2">
+                <BadgeCheck size={18} className="text-violet-600" />
+                <h3 className="font-heading font-bold text-sm text-ink-900 uppercase tracking-wider">
+                  5. Mobile AI Facial Attendance &amp; Biometric Rules
+                </h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-ink-700 mb-1">
+                    AI Facial Match Confidence Threshold (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="70"
+                    max="99"
+                    value={schoolData.admin_rules_config.face_liveness_threshold_pct || 80}
+                    onChange={(e) =>
+                      setSchoolData((p) => ({
+                        ...p,
+                        admin_rules_config: {
+                          ...p.admin_rules_config,
+                          face_liveness_threshold_pct: Number(e.target.value),
+                        },
+                      }))
+                    }
+                    className="w-full px-3 py-2 text-xs bg-white border border-cn-border rounded-xl text-ink-900 font-semibold focus:ring-2 focus:ring-violet-500"
+                  />
+                  <span className="text-[11px] text-ink-400 mt-1 block">Minimum AI vector match score required for attendance check-in.</span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-ink-700 mb-1">
+                    Campus Geofence Radius Restriction (Meters)
+                  </label>
+                  <input
+                    type="number"
+                    min="10"
+                    max="500"
+                    value={schoolData.admin_rules_config.face_geofence_radius_meters || 50}
+                    onChange={(e) =>
+                      setSchoolData((p) => ({
+                        ...p,
+                        admin_rules_config: {
+                          ...p.admin_rules_config,
+                          face_geofence_radius_meters: Number(e.target.value),
+                        },
+                      }))
+                    }
+                    className="w-full px-3 py-2 text-xs bg-white border border-cn-border rounded-xl text-ink-900 font-semibold focus:ring-2 focus:ring-violet-500"
+                  />
+                  <span className="text-[11px] text-ink-400 mt-1 block">Max distance allowed from school gate coordinates for mobile punch-in.</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                <label className="flex items-center gap-3 p-3 rounded-xl bg-white border border-cn-border cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={schoolData.admin_rules_config.face_attendance_enabled ?? true}
+                    onChange={(e) =>
+                      setSchoolData((p) => ({
+                        ...p,
+                        admin_rules_config: {
+                          ...p.admin_rules_config,
+                          face_attendance_enabled: e.target.checked,
+                        },
+                      }))
+                    }
+                    className="w-4 h-4 text-violet-600 rounded focus:ring-violet-500"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-ink-900 block">Mobile Staff Face Punch-In</span>
+                    <span className="text-[11px] text-ink-500">Allow teachers &amp; staff to punch attendance via mobile facial AI.</span>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 rounded-xl bg-white border border-cn-border cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={schoolData.admin_rules_config.face_anti_spoofing_required ?? true}
+                    onChange={(e) =>
+                      setSchoolData((p) => ({
+                        ...p,
+                        admin_rules_config: {
+                          ...p.admin_rules_config,
+                          face_anti_spoofing_required: e.target.checked,
+                        },
+                      }))
+                    }
+                    className="w-4 h-4 text-violet-600 rounded focus:ring-violet-500"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-ink-900 block">Anti-Spoofing Liveness Challenge</span>
+                    <span className="text-[11px] text-ink-500">Require motion challenge (blink/nod) to prevent photo/video spoofing.</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-cn-border">
+              <button
+                type="submit"
+                disabled={savingSchool}
+                className="px-6 py-2.5 text-xs font-bold text-white bg-violet-600 hover:bg-violet-700 rounded-xl shadow-md flex items-center gap-2 transition-all cursor-pointer"
+              >
+                {savingSchool ? "Saving Rules Engine..." : "Save Policy Rules Configuration"}
+              </button>
+            </div>
+
+          </form>
+        </div>
+      )}
+
 
       {/* Modal: Add Academic Year */}
       {showYearModal && (
