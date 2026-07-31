@@ -3,9 +3,9 @@ import SearchBar from "./SearchBar";
 import NotificationButton from "./NotificationButton";
 import ProfileButton from "./ProfileButton";
 import useUser from "../../features/auth/hooks/useUser";
-import { Menu } from "lucide-react";
+import { Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
-const Navbar = ({ onToggleSidebar }) => {
+const Navbar = ({ onToggleSidebar, isCollapsed, onToggleCollapse }) => {
   const { user } = useUser();
   const profile = user?.data;
   const tenantName = profile?.tenant || "Vidyam School";
@@ -13,11 +13,22 @@ const Navbar = ({ onToggleSidebar }) => {
 
   return (
     <div className="flex items-center gap-3 w-full">
+      {/* Mobile Drawer Trigger */}
       <button
         onClick={onToggleSidebar}
-        className="md:hidden w-[42px] h-[42px] bg-violet-950 text-white border border-violet-900 rounded-xl hover:bg-violet-900 transition shadow-sm cursor-pointer shrink-0 flex items-center justify-center outline-none"
+        title="Open Sidebar"
+        className="md:hidden w-[40px] h-[40px] bg-violet-950 text-white border border-violet-900 rounded-xl hover:bg-violet-900 transition shadow-sm cursor-pointer shrink-0 flex items-center justify-center outline-none"
       >
         <Menu size={18} />
+      </button>
+
+      {/* Desktop Collapse / Expand Toggle */}
+      <button
+        onClick={onToggleCollapse}
+        title={isCollapsed ? "Expand Sidebar" : "Minimize Sidebar"}
+        className="hidden md:flex w-[38px] h-[38px] bg-violet-50 text-violet-900 border border-violet-200/80 rounded-xl hover:bg-violet-100 transition shadow-2xs cursor-pointer shrink-0 items-center justify-center outline-none"
+      >
+        {isCollapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
       </button>
 
       <div className="flex-1 min-w-0">
@@ -42,3 +53,4 @@ const Navbar = ({ onToggleSidebar }) => {
 };
 
 export default Navbar;
+
