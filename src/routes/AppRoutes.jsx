@@ -51,6 +51,8 @@ import Infirmary from "../features/hr/pages/Infirmary";
 import TransferCertificates from "../features/students/pages/TransferCertificates";
 import BoardCompliance from "../features/reports/pages/BoardCompliance";
 import LandingPage from "../pages/LandingPage";
+import ChartOfAccounts from "../features/accounting/pages/ChartOfAccounts";
+import JournalEntries from "../features/accounting/pages/JournalEntries";
 
 
 const AppRoutes = () => {
@@ -96,6 +98,9 @@ const AppRoutes = () => {
             <Route path="inventory" element={<Inventory />} />
             <Route path="reports" element={<Reports />} />
             <Route path="reports/board-compliance" element={<BoardCompliance />} />
+
+            <Route path="accounting/chart-of-accounts" element={<ChartOfAccounts />} />
+            <Route path="accounting/journal-entries" element={<JournalEntries />} />
 
             <Route path="feedback" element={<ParentFeedback />} />
             <Route path="hr/leave" element={<LeaveRequests />} />

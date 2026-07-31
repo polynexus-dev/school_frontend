@@ -36,6 +36,8 @@ import {
   ChevronDown,
   ChevronRight,
   ShieldCheck,
+  Landmark,
+  BookText,
   PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
@@ -98,6 +100,15 @@ const domainCategories = [
     ],
   },
   {
+    id: "accounting",
+    label: "Accounting & Ledger",
+    icon: <Landmark size={17} />,
+    items: [
+      { label: "Chart of Accounts", path: "/accounting/chart-of-accounts", icon: <Landmark size={16} /> },
+      { label: "Journal Entries", path: "/accounting/journal-entries", icon: <BookText size={16} /> },
+    ],
+  },
+  {
     id: "hr",
     label: "HR & Staff Governance",
     icon: <UserCheck size={17} />,
@@ -134,6 +145,8 @@ const labelToModuleMap = {
   "Executive Reports": "reports",
   "PTM Meetings": "ptm",
   "Library System": "library",
+  "Chart of Accounts": "accounting",
+  "Journal Entries": "accounting",
 };
 
 const Sidebar = ({
