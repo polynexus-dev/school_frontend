@@ -36,6 +36,17 @@ import {
   ChevronDown,
   ChevronRight,
   ShieldCheck,
+  ScrollText,
+  Receipt,
+  HeartHandshake,
+  Landmark,
+  FileArchive,
+  PiggyBank,
+  Users2,
+  FileStack,
+  HandCoins,
+  UserCog,
+  FolderLock,
 } from "lucide-react";
 import VidyamLogoMark from "../../components/common/VidyamLogo";
 
@@ -106,12 +117,33 @@ const domainCategories = [
     ],
   },
   {
+    id: "accounting",
+    label: "Accounting & Ledger",
+    icon: <BookOpen size={16} />,
+    items: [
+      { label: "Chart of Accounts", path: "/accounting/chart-of-accounts", icon: <BookOpen size={16} /> },
+      { label: "Journal Entries", path: "/accounting/journal-entries", icon: <ScrollText size={16} /> },
+      { label: "Expense Vouchers", path: "/accounting/expense-vouchers", icon: <Receipt size={16} /> },
+      { label: "Donations", path: "/donations", icon: <HeartHandshake size={16} /> },
+      { label: "Bank Reconciliation", path: "/accounting/bank-reconciliation", icon: <Landmark size={16} /> },
+      { label: "Investment Register", path: "/accounting/investments", icon: <PiggyBank size={16} /> },
+      { label: "Trustees", path: "/accounting/trustees", icon: <Users2 size={16} /> },
+      { label: "Bills & Vendors", path: "/accounting/bills", icon: <FileStack size={16} /> },
+      { label: "Grant Register", path: "/accounting/grants", icon: <HandCoins size={16} /> },
+      { label: "Statutory Challans", path: "/accounting/statutory-challans", icon: <ShieldCheck size={16} /> },
+      { label: "Provisions & Schedules", path: "/accounting/provision-schedules", icon: <CalendarClock size={16} /> },
+      { label: "CA Access", path: "/accounting/ca-access", icon: <UserCog size={16} /> },
+    ],
+  },
+  {
     id: "reports",
     label: "Reports & Compliance",
     icon: <FileBarChart2 size={16} />,
     items: [
       { label: "Executive Reports", path: "/reports", icon: <FileBarChart2 size={16} /> },
       { label: "Board Compliance", path: "/reports/board-compliance", icon: <FileCheck size={16} /> },
+      { label: "Annual Audit Package", path: "/reports/audit-package", icon: <FileArchive size={16} /> },
+      { label: "Compliance Documents", path: "/reports/compliance-documents", icon: <FolderLock size={16} /> },
     ],
   },
 ];
@@ -132,6 +164,20 @@ const labelToModuleMap = {
   "Executive Reports": "reports",
   "PTM Meetings": "ptm",
   "Library System": "library",
+  "Chart of Accounts": "accounting",
+  "Journal Entries": "accounting",
+  "Expense Vouchers": "accounting",
+  "Donations": "accounting",
+  "Bank Reconciliation": "accounting",
+  "Investment Register": "accounting",
+  "Trustees": "accounting",
+  "Bills & Vendors": "accounting",
+  "Grant Register": "accounting",
+  "Statutory Challans": "accounting",
+  "Provisions & Schedules": "accounting",
+  "CA Access": "accounting",
+  "Annual Audit Package": "accounting",
+  "Compliance Documents": "accounting",
 };
 
 const Sidebar = ({ onClose }) => {
@@ -173,6 +219,12 @@ const Sidebar = ({ onClose }) => {
     }
     if (roleName === "Student") {
       return ["Dashboard", "Homework", "Timetable", "Report Cards", "Attendance", "Announcements", "Calendar", "Documents Vault", "Notifications", "Settings"].includes(item.label);
+    }
+    if (roleName === "CA") {
+      // Read-only accounting access only — no CRUD pages (Chart of Accounts,
+      // Journal Entries, etc.), no other module. Backend enforces this
+      // independently via IsCAOrAdminReadOnly; this just matches it in the nav.
+      return ["Dashboard", "Executive Reports", "Annual Audit Package", "Compliance Documents"].includes(item.label);
     }
     if (item.label === "Chain Dashboard") {
       return roleName === "SaaS Admin";
@@ -351,6 +403,8 @@ const Sidebar = ({ onClose }) => {
               ? "Conductor Portal"
               : roleName === "Student"
               ? "Student Portal"
+              : roleName === "CA"
+              ? "CA / Auditor Portal (Read-Only)"
               : `School Office · ${roleName}`}
           </div>
         </div>

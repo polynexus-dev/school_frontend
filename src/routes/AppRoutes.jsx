@@ -50,7 +50,21 @@ import StudyNotes from "../features/notes/pages/StudyNotes";
 import Infirmary from "../features/hr/pages/Infirmary";
 import TransferCertificates from "../features/students/pages/TransferCertificates";
 import BoardCompliance from "../features/reports/pages/BoardCompliance";
+import AuditPackage from "../features/reports/pages/AuditPackage";
+import ComplianceDocuments from "../features/reports/pages/ComplianceDocuments";
+import CAAccess from "../features/accounting/pages/CAAccess";
 import LandingPage from "../pages/LandingPage";
+import ChartOfAccounts from "../features/accounting/pages/ChartOfAccounts";
+import JournalEntries from "../features/accounting/pages/JournalEntries";
+import ExpenseVouchers from "../features/accounting/pages/ExpenseVouchers";
+import Donations from "../features/donations/pages/Donations";
+import BankReconciliation from "../features/accounting/pages/BankReconciliation";
+import Investments from "../features/accounting/pages/Investments";
+import Trustees from "../features/accounting/pages/Trustees";
+import Bills from "../features/accounting/pages/Bills";
+import Grants from "../features/accounting/pages/Grants";
+import StatutoryChallans from "../features/accounting/pages/StatutoryChallans";
+import ProvisionSchedules from "../features/accounting/pages/ProvisionSchedules";
 
 
 const AppRoutes = () => {
@@ -96,6 +110,21 @@ const AppRoutes = () => {
             <Route path="inventory" element={<Inventory />} />
             <Route path="reports" element={<Reports />} />
             <Route path="reports/board-compliance" element={<BoardCompliance />} />
+            <Route path="reports/audit-package" element={<AuditPackage />} />
+            <Route path="reports/compliance-documents" element={<ComplianceDocuments />} />
+
+            <Route path="accounting/chart-of-accounts" element={<ChartOfAccounts />} />
+            <Route path="accounting/journal-entries" element={<JournalEntries />} />
+            <Route path="accounting/expense-vouchers" element={<ExpenseVouchers />} />
+            <Route path="donations" element={<Donations />} />
+            <Route path="accounting/bank-reconciliation" element={<BankReconciliation />} />
+            <Route path="accounting/investments" element={<Investments />} />
+            <Route path="accounting/trustees" element={<Trustees />} />
+            <Route path="accounting/bills" element={<Bills />} />
+            <Route path="accounting/grants" element={<Grants />} />
+            <Route path="accounting/statutory-challans" element={<StatutoryChallans />} />
+            <Route path="accounting/provision-schedules" element={<ProvisionSchedules />} />
+            <Route path="accounting/ca-access" element={<CAAccess />} />
 
             <Route path="feedback" element={<ParentFeedback />} />
             <Route path="hr/leave" element={<LeaveRequests />} />

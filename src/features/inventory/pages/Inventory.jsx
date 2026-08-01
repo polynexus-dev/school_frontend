@@ -18,7 +18,12 @@ const STATUS_TONE = {
 };
 
 const emptyCategoryForm = { name: "", description: "" };
-const emptyAssetForm = { asset_tag: "", name: "", category: "", serial_number: "", location: "", purchase_date: "", purchase_cost: "" };
+const emptyAssetForm = { asset_tag: "", name: "", category: "", serial_number: "", location: "", purchase_date: "", purchase_cost: "", useful_life_years: "", depreciation_method: "straight_line", salvage_value: "0" };
+
+const DEPRECIATION_METHODS = [
+  { label: "Straight Line", value: "straight_line" },
+  { label: "Written Down Value", value: "written_down_value" },
+];
 const emptyAssignForm = { asset: "", assigned_to_label: "", notes: "" };
 
 const Inventory = () => {
@@ -118,6 +123,8 @@ const Inventory = () => {
         category: Number(assetForm.category),
         purchase_cost: assetForm.purchase_cost || null,
         purchase_date: assetForm.purchase_date || null,
+        useful_life_years: assetForm.useful_life_years || null,
+        salvage_value: assetForm.salvage_value || 0,
       });
       toast.success("Asset added.");
       setShowAssetModal(false);
@@ -285,6 +292,9 @@ const Inventory = () => {
           <BlackInputField label="Location" fieldName="location" value={assetForm.location} onChange={(e) => setAssetForm((p) => ({ ...p, location: e.target.value }))} />
           <BlackInputField label="Purchase date" fieldName="purchase_date" type="date" value={assetForm.purchase_date} onChange={(e) => setAssetForm((p) => ({ ...p, purchase_date: e.target.value }))} />
           <BlackInputField label="Purchase cost" fieldName="purchase_cost" type="number" value={assetForm.purchase_cost} onChange={(e) => setAssetForm((p) => ({ ...p, purchase_cost: e.target.value }))} />
+          <BlackInputField label="Useful life (years, optional)" fieldName="useful_life_years" type="number" value={assetForm.useful_life_years} onChange={(e) => setAssetForm((p) => ({ ...p, useful_life_years: e.target.value }))} placeholder="Leave blank to exclude from depreciation" />
+          <SelectBox label="Depreciation method" fieldName="depreciation_method" value={assetForm.depreciation_method} onChange={(e) => setAssetForm((p) => ({ ...p, depreciation_method: e.target.value }))} options={DEPRECIATION_METHODS} />
+          <BlackInputField label="Salvage value" fieldName="salvage_value" type="number" value={assetForm.salvage_value} onChange={(e) => setAssetForm((p) => ({ ...p, salvage_value: e.target.value }))} />
           <div className="flex gap-3 justify-end pt-2">
             <Button variant="outline" onClick={() => setShowAssetModal(false)}>
               Cancel

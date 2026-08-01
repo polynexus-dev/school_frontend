@@ -17,6 +17,13 @@ const ROLE_ALLOWED_PREFIXES = {
   // concerns. Students get exactly the same modules the Student mobile app
   // would have covered, just via the web portal instead.
   Student: ["dashboard", "homework", "timetable", "report-cards", "attendance", "announcements", "calendar", "documents", "notifications"],
+  // CA/Auditor — read-only accounting access only. Deliberately excludes
+  // "accounting" itself (the CRUD pages for journal entries, expense
+  // vouchers, etc.) — a CA only ever needs Reports (which is a pure
+  // read-only viewer) and the audit package/compliance documents, both of
+  // which live under /reports/*. The backend enforces this independently
+  // (IsCAOrAdminReadOnly), this is just the matching nav-level guard.
+  CA: ["dashboard", "reports"],
 };
 
 const RoleRoute = () => {
