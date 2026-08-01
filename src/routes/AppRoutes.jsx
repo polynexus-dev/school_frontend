@@ -132,9 +132,6 @@ const AppRoutes = () => {
             <Route path="infirmary" element={<Infirmary />} />
             <Route path="transfer-certificates" element={<TransferCertificates />} />
 
-
-
-
             <Route path="parents-linking" element={<GuardianLinking />} />
             <Route path="attendance" element={<Attendance />} />
             <Route path="transport" element={<Transport />} />
