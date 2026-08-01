@@ -83,7 +83,7 @@ const AppLayout = () => {
         }`}
       >
         <div
-          className="h-full relative flex shrink-0"
+          className="h-full relative flex flex-col shrink-0 min-h-0"
           style={{ width: isMobileOpen ? "260px" : `${activeDesktopWidth}px` }}
         >
           <Sidebar

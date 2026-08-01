@@ -60,6 +60,10 @@
 }
 
 /* Custom premium scrollbar for sidebar and scroll views */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -68,11 +72,11 @@
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.25);
   border-radius: 9999px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.45);
 }
 
 /* Custom premium scrollbar for light backgrounds (tables/cards) */

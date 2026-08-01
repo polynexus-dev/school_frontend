@@ -68,6 +68,8 @@ const domainCategories = [
       { label: "Timetable", path: "/timetable", icon: <CalendarDays size={16} /> },
       { label: "Attendance", path: "/attendance", icon: <CalendarCheck2 size={16} /> },
       { label: "Report Cards", path: "/report-cards", icon: <FileText size={16} /> },
+      { label: "Exam Datesheet", path: "/academics/exam-datesheet", icon: <CalendarClock size={16} /> },
+      { label: "Hall Ticket", path: "/academics/hall-ticket", icon: <FileCheck size={16} /> },
     ],
   },
   {
@@ -219,16 +221,16 @@ const Sidebar = ({
       return true;
     }
     if (roleName === "Parent") {
-      return ["Dashboard", "Homework", "Timetable", "Report Cards", "Messages", "PTM Meetings", "Calendar", "Documents Vault", "Attendance", "Transport & GPS", "Fees & Collections", "Announcements", "Notifications"].includes(item.label);
+      return ["Dashboard", "Homework", "Timetable", "Report Cards", "Exam Datesheet", "Hall Ticket", "Messages", "PTM Meetings", "Calendar", "Documents Vault", "Attendance", "Transport & GPS", "Fees & Collections", "Announcements", "Notifications"].includes(item.label);
     }
     if (roleName === "Teacher") {
-      return ["Dashboard", "Students", "Syllabus Progress", "Study Notes", "Paper Setting", "Homework", "Timetable", "Report Cards", "Messages", "Principal Feedback", "PTM Meetings", "Library System", "Hostel Occupancy", "Visitor Log", "Gate Passes", "Calendar", "Documents Vault", "Certificates", "Transfer Certificates", "Infirmary & CWSN", "Executive Reports", "Board Compliance", "Staff Leave Requests", "Staff Attendance", "Attendance", "Transport & GPS", "Announcements", "Notifications", "Settings"].includes(item.label);
+      return ["Dashboard", "Students", "Syllabus Progress", "Study Notes", "Paper Setting", "Homework", "Timetable", "Report Cards", "Exam Datesheet", "Hall Ticket", "Messages", "Principal Feedback", "PTM Meetings", "Library System", "Hostel Occupancy", "Visitor Log", "Gate Passes", "Calendar", "Documents Vault", "Certificates", "Transfer Certificates", "Infirmary & CWSN", "Executive Reports", "Board Compliance", "Staff Leave Requests", "Staff Attendance", "Attendance", "Transport & GPS", "Announcements", "Notifications", "Settings"].includes(item.label);
     }
     if (roleName === "Conductor") {
       return ["Dashboard", "Transport & GPS", "Announcements", "Notifications", "Staff Leave Requests", "Staff Attendance", "Calendar", "Documents Vault", "Settings"].includes(item.label);
     }
     if (roleName === "Student") {
-      return ["Dashboard", "Homework", "Timetable", "Report Cards", "Attendance", "Announcements", "Calendar", "Documents Vault", "Notifications", "Settings"].includes(item.label);
+      return ["Dashboard", "Homework", "Timetable", "Report Cards", "Exam Datesheet", "Hall Ticket", "Attendance", "Announcements", "Calendar", "Documents Vault", "Notifications", "Settings"].includes(item.label);
     }
     if (roleName === "CA") {
       // Read-only accounting access only — no CRUD pages (Chart of Accounts,
@@ -260,12 +262,16 @@ const Sidebar = ({
   useEffect(() => {
     const activeCatId = getActiveCategoryId();
     if (activeCatId) {
-      setExpandedCategories((prev) => ({ ...prev, [activeCatId]: true }));
+      setExpandedCategories({ [activeCatId]: true });
     }
   }, [location.pathname]);
 
   const toggleCategory = (catId) => {
-    setExpandedCategories((prev) => ({ ...prev, [catId]: !prev[catId] }));
+    setExpandedCategories((prev) => {
+      const isOpen = !!prev[catId];
+      // Single accordion mode: open only catId, closing all other categories
+      return isOpen ? {} : { [catId]: true };
+    });
   };
 
   return (
@@ -285,7 +291,7 @@ const Sidebar = ({
         </div>
       )}
 
-      <div className="flex flex-col flex-1 overflow-hidden">
+      <div className="flex flex-col flex-1 overflow-hidden min-h-0">
         {/* Brand Header */}
         <div className={`flex items-center pb-3 border-b border-white/10 ${isCollapsed ? "justify-center px-0" : "justify-between px-2"}`}>
           <div className={`flex items-center gap-2.5 min-w-0 ${isCollapsed ? "justify-center" : ""}`}>
@@ -324,7 +330,7 @@ const Sidebar = ({
         </div>
 
         {/* Scrollable Grouped Navigation */}
-        <nav className="flex flex-col gap-1.5 pt-3 overflow-y-auto custom-scrollbar pr-1 flex-1">
+        <nav className="flex flex-col gap-1.5 pt-3 pb-8 overflow-y-auto custom-scrollbar pr-1 flex-1 min-h-0">
           {/* Top Anchor: Dashboard */}
           {isCollapsed ? (
             <div className="relative group/dash flex justify-center">
@@ -393,7 +399,6 @@ const Sidebar = ({
                   <div className="hidden group-hover/cat:flex flex-col fixed left-[74px] bg-slate-950/95 backdrop-blur-xl border border-violet-500/30 text-white rounded-2xl p-2 shadow-2xl z-50 min-w-[210px] animate-in fade-in slide-in-from-left-2 duration-150">
                     <div className="px-3 py-1.5 mb-1.5 border-b border-white/10 flex items-center justify-between">
                       <span className="text-[11px] font-bold text-amber-300 uppercase tracking-wider">{cat.label}</span>
-                      <span className="text-[9px] font-extrabold bg-white/15 px-1.5 py-0.5 rounded-full">{visibleItems.length}</span>
                     </div>
                     <div className="flex flex-col gap-0.5 max-h-[320px] overflow-y-auto custom-scrollbar pr-0.5">
                       {visibleItems.map((item) => {
@@ -442,9 +447,6 @@ const Sidebar = ({
                     <span className="truncate">{cat.label}</span>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0 ml-1">
-                    <span className="px-1.5 py-0.2 text-[9px] font-extrabold rounded-full bg-white/15 text-white/90">
-                      {visibleItems.length}
-                    </span>
                     {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                   </div>
                 </button>
@@ -464,7 +466,7 @@ const Sidebar = ({
                             navigate(item.path);
                             if (onClose) onClose();
                           }}
-                          className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer text-left min-w-0 ${
+                          className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer text-left min-w-0 ${
                             isActive
                               ? "bg-white text-purple-950 font-bold shadow-md transform translate-x-0.5"
                               : "text-violet-200/80 hover:bg-white/10 hover:text-white"

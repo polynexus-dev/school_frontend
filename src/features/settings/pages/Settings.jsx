@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import useUser from "../../auth/hooks/useUser";
+import PaymentGatewaysTab from "../components/PaymentGatewaysTab";
 import {
   getStaffPermissions,
   updateStaffPermission,
@@ -39,6 +40,7 @@ import {
   BookOpen,
   Calendar,
   MessageSquare,
+  CreditCard,
 } from "lucide-react";
 
 const Settings = () => {
@@ -430,6 +432,20 @@ const Settings = () => {
           >
             <Building2 size={16} />
             School Profile &amp; Branding
+          </button>
+        )}
+
+        {isAdmin && (
+          <button
+            onClick={() => setActiveTab("payment_gateways")}
+            className={`flex items-center gap-2 py-3 px-4 text-xs sm:text-sm font-semibold border-b-2 cursor-pointer transition-all ${
+              activeTab === "payment_gateways"
+                ? "border-violet-600 text-violet-900 bg-violet-50/50 rounded-t-lg"
+                : "border-transparent text-ink-500 hover:text-ink-900"
+            }`}
+          >
+            <CreditCard size={16} />
+            Payment Gateways
           </button>
         )}
 
@@ -876,6 +892,22 @@ const Settings = () => {
               </div>
             </form>
           )}
+        </div>
+      )}
+
+      {/* TAB: PAYMENT GATEWAYS (ADMIN) */}
+      {isAdmin && activeTab === "payment_gateways" && (
+        <div>
+          <div className="flex items-center gap-3 pb-4 mb-5 border-b border-cn-border">
+            <div className="w-10 h-10 rounded-xl bg-violet-100 text-violet-800 flex items-center justify-center">
+              <CreditCard size={20} />
+            </div>
+            <div>
+              <h2 className="font-heading font-semibold text-lg text-ink-900">Payment Gateways</h2>
+              <p className="text-xs text-ink-500">Bring your own merchant account for online fee collection — VIDYAM never touches the money</p>
+            </div>
+          </div>
+          <PaymentGatewaysTab />
         </div>
       )}
 

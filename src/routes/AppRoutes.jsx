@@ -27,6 +27,10 @@ import GradeExamPaper from "../features/academics/pages/GradeExamPaper";
 import HomeworkBoard from "../features/academics/pages/HomeworkBoard";
 import Timetable from "../features/academics/pages/Timetable";
 import ReportCards from "../features/academics/pages/ReportCards";
+import ExamDatesheet from "../features/academics/pages/ExamDatesheet";
+import ExamRooms from "../features/academics/pages/ExamRooms";
+import SeatingArrangementPage from "../features/academics/pages/SeatingArrangementPage";
+import HallTicket from "../features/academics/pages/HallTicket";
 import Messages from "../features/messaging/pages/Messages";
 import PTMSlots from "../features/ptm/pages/PTMSlots";
 import ChainDashboard from "../features/chain/pages/ChainDashboard";
@@ -97,6 +101,10 @@ const AppRoutes = () => {
             <Route path="homework" element={<HomeworkBoard />} />
             <Route path="timetable" element={<Timetable />} />
             <Route path="report-cards" element={<ReportCards />} />
+            <Route path="academics/exam-datesheet" element={<ExamDatesheet />} />
+            <Route path="academics/exam-rooms" element={<ExamRooms />} />
+            <Route path="academics/seating-arrangements" element={<SeatingArrangementPage />} />
+            <Route path="academics/hall-ticket" element={<HallTicket />} />
             <Route path="messages" element={<Messages />} />
             <Route path="ptm" element={<PTMSlots />} />
             <Route path="chain-dashboard" element={<ChainDashboard />} />
