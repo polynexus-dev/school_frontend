@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
-import { Download } from "lucide-react";
+import { Download, Send } from "lucide-react";
+import Button from "../../../components/Button";
 import Table from "../../../components/Table";
 import SelectBox from "../../../components/SelectBox";
 import reportCardService from "../services/reportCardService";
@@ -36,6 +37,7 @@ const ReportCards = () => {
   const [allCards, setAllCards] = useState([]);
   const [loading, setLoading] = useState(false);
   const [downloadingId, setDownloadingId] = useState(null);
+  const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     // Both the exam-terms and class-sections endpoints are Teacher+ only —
@@ -116,6 +118,20 @@ const ReportCards = () => {
     }
   };
 
+  const handlePublish = async () => {
+    setPublishing(true);
+    try {
+      const res = await reportCardService.publishReportCards(Number(examTerm), Number(classSection));
+      toast.success(`Published ${res.data.published_count} report card(s) — guardians notified.`);
+      fetchCards();
+    } catch (err) {
+      console.error("Failed to publish report cards:", err);
+      toast.error(err?.response?.data?.error || "Failed to publish report cards.");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   const columns = [
     { header: "Student", accessor: (row) => row.student_name },
     { header: "Admission No.", accessor: (row) => row.admission_no },
@@ -159,7 +175,19 @@ const ReportCards = () => {
         </div>
         <SelectBox className="w-52" label="Exam term" fieldName="exam_term" value={examTerm} onChange={(e) => setExamTerm(e.target.value)} options={examTermOptions} />
         {!isSelfView && (
-          <SelectBox className="w-56" label="Class & Section" fieldName="class_section" value={classSection} onChange={(e) => setClassSection(e.target.value)} options={classSectionOptions} />
+          <>
+            <SelectBox className="w-56" label="Class & Section" fieldName="class_section" value={classSection} onChange={(e) => setClassSection(e.target.value)} options={classSectionOptions} />
+            <Button
+              variant="outline"
+              icon={<Send size={15} />}
+              onClick={handlePublish}
+              loading={publishing}
+              disabled={!examTerm || !classSection}
+              title={!examTerm || !classSection ? "Pick a specific exam term and class/section to publish" : undefined}
+            >
+              Publish report cards
+            </Button>
+          </>
         )}
       </div>
 

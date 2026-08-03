@@ -13,6 +13,12 @@ const downloadReportCardPdf = async (id) => {
   return { status: response.status, data: response.data };
 };
 
-const reportCardService = { getReportCards, downloadReportCardPdf };
+// POST academics/report-cards/publish/ {exam_term, class_section} -> flips every draft card to published, notifies guardians.
+const publishReportCards = async (examTerm, classSection) => {
+  const response = await api.post("academics/report-cards/publish/", { exam_term: examTerm, class_section: classSection });
+  return { status: response.status, data: response.data };
+};
+
+const reportCardService = { getReportCards, downloadReportCardPdf, publishReportCards };
 
 export default reportCardService;

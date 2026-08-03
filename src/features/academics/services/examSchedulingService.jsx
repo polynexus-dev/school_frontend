@@ -42,6 +42,12 @@ const deleteSchedule = async (id) => {
   return { status: response.status, data: response.data };
 };
 
+// POST academics/exam-schedule/publish/ {exam_term, class_section} -> notifies guardians the datesheet is out.
+const publishSchedule = async (examTerm, classSection) => {
+  const response = await api.post("academics/exam-schedule/publish/", { exam_term: examTerm, class_section: classSection });
+  return { status: response.status, data: response.data };
+};
+
 // ── Seating Arrangements ────────────────────────────────────────────────
 const getSeatingArrangements = async (params = {}) => {
   const response = await api.get("academics/seating-arrangements/", { params });
@@ -80,6 +86,7 @@ const examSchedulingService = {
   createSchedule,
   updateSchedule,
   deleteSchedule,
+  publishSchedule,
   getSeatingArrangements,
   createSeatingArrangement,
   generateSeating,

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Plus, DoorOpen, IdCard } from "lucide-react";
+import { Plus, DoorOpen, IdCard, Send } from "lucide-react";
 import Button from "../../../components/Button";
 import Table from "../../../components/Table";
 import Modal from "../../../components/Modal";
@@ -46,6 +46,7 @@ const ExamDatesheet = () => {
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [publishing, setPublishing] = useState(false);
 
   const {
     items: schedules,
@@ -131,6 +132,19 @@ const ExamDatesheet = () => {
     }
   };
 
+  const handlePublish = async () => {
+    setPublishing(true);
+    try {
+      const res = await examSchedulingService.publishSchedule(Number(filterExamTerm), Number(filterClassSection));
+      toast.success(`Datesheet published — ${res.data.notified_students} guardian(s) notified.`);
+    } catch (err) {
+      console.error("Failed to publish datesheet:", err);
+      toast.error(err?.response?.data?.error || "Failed to publish datesheet.");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   const validate = () => {
     const newErrors = {};
     if (!form.exam_term) newErrors.exam_term = "Required";
@@ -209,9 +223,19 @@ const ExamDatesheet = () => {
         </Button>
       </div>
 
-      <div className="flex flex-wrap gap-3 mb-4">
+      <div className="flex flex-wrap items-center gap-3 mb-4">
         <SelectBox className="w-56" fieldName="filter_exam_term" value={filterExamTerm} onChange={(e) => setFilterExamTerm(e.target.value)} options={examTermOptions} />
         <SelectBox className="w-56" fieldName="filter_class_section" value={filterClassSection} onChange={(e) => setFilterClassSection(e.target.value)} options={classSectionOptions} />
+        <Button
+          variant="outline"
+          icon={<Send size={15} />}
+          onClick={handlePublish}
+          loading={publishing}
+          disabled={!filterExamTerm || !filterClassSection}
+          title={!filterExamTerm || !filterClassSection ? "Pick a specific exam term and class/section to publish" : undefined}
+        >
+          Publish datesheet
+        </Button>
       </div>
 
       <Table
