@@ -54,6 +54,7 @@ import StudyNotes from "../features/notes/pages/StudyNotes";
 import Infirmary from "../features/hr/pages/Infirmary";
 import TransferCertificates from "../features/students/pages/TransferCertificates";
 import BoardCompliance from "../features/reports/pages/BoardCompliance";
+import ReliabilityScorecard from "../features/reports/pages/ReliabilityScorecard";
 import AuditPackage from "../features/reports/pages/AuditPackage";
 import ComplianceDocuments from "../features/reports/pages/ComplianceDocuments";
 import CAAccess from "../features/accounting/pages/CAAccess";
@@ -117,6 +118,7 @@ const AppRoutes = () => {
             <Route path="certificates" element={<Certificates />} />
             <Route path="inventory" element={<Inventory />} />
             <Route path="reports" element={<Reports />} />
+            <Route path="reports/reliability-scorecard" element={<ReliabilityScorecard />} />
             <Route path="reports/board-compliance" element={<BoardCompliance />} />
             <Route path="reports/audit-package" element={<AuditPackage />} />
             <Route path="reports/compliance-documents" element={<ComplianceDocuments />} />

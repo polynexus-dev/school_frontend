@@ -82,6 +82,13 @@ const downloadAuditPackage = async (startDate, endDate, exportFormat = "zip") =>
   window.URL.revokeObjectURL(url);
 };
 
-const reportService = { getReport, downloadReportCsv, downloadAuditPackage, REPORT_ENDPOINTS };
+// GET /api/reports/reliability-scorecard/?start_date&end_date — KPI dict, not
+// a (columns, rows) table, so it's kept separate from getReport/REPORT_ENDPOINTS.
+const getReliabilityScorecard = async (params = {}) => {
+  const response = await api.get("reports/reliability-scorecard/", { params });
+  return { status: response.status, data: response.data };
+};
+
+const reportService = { getReport, downloadReportCsv, downloadAuditPackage, getReliabilityScorecard, REPORT_ENDPOINTS };
 
 export default reportService;

@@ -146,6 +146,7 @@ const domainCategories = [
     icon: <FileBarChart2 size={17} />,
     items: [
       { label: "Executive Reports", path: "/reports", icon: <FileBarChart2 size={16} /> },
+      { label: "Reliability Scorecard", path: "/reports/reliability-scorecard", icon: <ShieldCheck size={16} /> },
       { label: "Board Compliance", path: "/reports/board-compliance", icon: <FileCheck size={16} /> },
       { label: "Annual Audit Package", path: "/reports/audit-package", icon: <FileArchive size={16} /> },
       { label: "Compliance Documents", path: "/reports/compliance-documents", icon: <FolderLock size={16} /> },
