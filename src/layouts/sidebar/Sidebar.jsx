@@ -50,6 +50,8 @@ import {
   BookText,
   PanelLeftClose,
   PanelLeftOpen,
+  Laptop2,
+  ClipboardEdit,
 } from "lucide-react";
 import VidyamLogoMark from "../../components/common/VidyamLogo";
 
@@ -68,8 +70,10 @@ const domainCategories = [
       { label: "Timetable", path: "/timetable", icon: <CalendarDays size={16} /> },
       { label: "Attendance", path: "/attendance", icon: <CalendarCheck2 size={16} /> },
       { label: "Report Cards", path: "/report-cards", icon: <FileText size={16} /> },
+      { label: "Marks Entry", path: "/academics/marks-entry", icon: <ClipboardEdit size={16} /> },
       { label: "Exam Datesheet", path: "/academics/exam-datesheet", icon: <CalendarClock size={16} /> },
       { label: "Hall Ticket", path: "/academics/hall-ticket", icon: <FileCheck size={16} /> },
+      { label: "Online Tests", path: "/academics/online-tests", icon: <Laptop2 size={16} />, matchPrefix: true },
     ],
   },
   {
@@ -225,13 +229,13 @@ const Sidebar = ({
       return ["Dashboard", "Homework", "Timetable", "Report Cards", "Exam Datesheet", "Hall Ticket", "Messages", "PTM Meetings", "Calendar", "Documents Vault", "Attendance", "Transport & GPS", "Fees & Collections", "Announcements", "Notifications"].includes(item.label);
     }
     if (roleName === "Teacher") {
-      return ["Dashboard", "Students", "Syllabus Progress", "Study Notes", "Paper Setting", "Homework", "Timetable", "Report Cards", "Exam Datesheet", "Hall Ticket", "Messages", "Principal Feedback", "PTM Meetings", "Library System", "Hostel Occupancy", "Visitor Log", "Gate Passes", "Calendar", "Documents Vault", "Certificates", "Transfer Certificates", "Infirmary & CWSN", "Executive Reports", "Board Compliance", "Staff Leave Requests", "Staff Attendance", "Attendance", "Transport & GPS", "Announcements", "Notifications", "Settings"].includes(item.label);
+      return ["Dashboard", "Students", "Syllabus Progress", "Study Notes", "Paper Setting", "Homework", "Timetable", "Report Cards", "Marks Entry", "Exam Datesheet", "Hall Ticket", "Messages", "Principal Feedback", "PTM Meetings", "Library System", "Hostel Occupancy", "Visitor Log", "Gate Passes", "Calendar", "Documents Vault", "Certificates", "Transfer Certificates", "Infirmary & CWSN", "Executive Reports", "Board Compliance", "Staff Leave Requests", "Staff Attendance", "Attendance", "Transport & GPS", "Announcements", "Notifications", "Settings"].includes(item.label);
     }
     if (roleName === "Conductor") {
       return ["Dashboard", "Transport & GPS", "Announcements", "Notifications", "Staff Leave Requests", "Staff Attendance", "Calendar", "Documents Vault", "Settings"].includes(item.label);
     }
     if (roleName === "Student") {
-      return ["Dashboard", "Homework", "Timetable", "Report Cards", "Exam Datesheet", "Hall Ticket", "Attendance", "Announcements", "Calendar", "Documents Vault", "Notifications", "Settings"].includes(item.label);
+      return ["Dashboard", "Homework", "Timetable", "Report Cards", "Exam Datesheet", "Hall Ticket", "Online Tests", "Attendance", "Announcements", "Calendar", "Documents Vault", "Notifications", "Settings"].includes(item.label);
     }
     if (roleName === "CA") {
       // Read-only accounting access only — no CRUD pages (Chart of Accounts,

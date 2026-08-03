@@ -10,13 +10,18 @@ import Loader from "../components/Loader";
 // exposure. Any role not listed here (School Admin/Management/Admin/SaaS
 // Admin) gets full access.
 const ROLE_ALLOWED_PREFIXES = {
-  Parent: ["dashboard", "attendance", "transport", "fees", "announcements", "notifications", "homework", "timetable", "report-cards", "messages", "ptm", "calendar", "documents"],
-  Teacher: ["dashboard", "students", "attendance", "transport", "announcements", "notifications", "paper-setting", "homework", "timetable", "hr", "report-cards", "messages", "ptm", "library", "gate-passes", "calendar", "documents", "reports"],
+  // "academics" covers exam-datesheet/hall-ticket/exam-rooms/seating-arrangements
+  // /online-tests — all already shown to these roles in Sidebar.jsx's
+  // isItemVisible, and already scoped correctly server-side (self/own-class
+  // only) — this list was just missing the prefix, silently bouncing every
+  // click on those sidebar links back to /dashboard.
+  Parent: ["dashboard", "academics", "attendance", "transport", "fees", "announcements", "notifications", "homework", "timetable", "report-cards", "messages", "ptm", "calendar", "documents"],
+  Teacher: ["dashboard", "academics", "students", "attendance", "transport", "announcements", "notifications", "paper-setting", "homework", "timetable", "hr", "report-cards", "messages", "ptm", "library", "gate-passes", "calendar", "documents", "reports"],
   Conductor: ["dashboard", "transport", "announcements", "notifications", "hr", "calendar", "documents"],
   // Read-only: no fees/transport/messages/ptm — those are Parent-facing
   // concerns. Students get exactly the same modules the Student mobile app
   // would have covered, just via the web portal instead.
-  Student: ["dashboard", "homework", "timetable", "report-cards", "attendance", "announcements", "calendar", "documents", "notifications"],
+  Student: ["dashboard", "academics", "homework", "timetable", "report-cards", "attendance", "announcements", "calendar", "documents", "notifications"],
   // CA/Auditor — read-only accounting access only. Deliberately excludes
   // "accounting" itself (the CRUD pages for journal entries, expense
   // vouchers, etc.) — a CA only ever needs Reports (which is a pure

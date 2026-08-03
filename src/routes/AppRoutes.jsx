@@ -31,6 +31,9 @@ import ExamDatesheet from "../features/academics/pages/ExamDatesheet";
 import ExamRooms from "../features/academics/pages/ExamRooms";
 import SeatingArrangementPage from "../features/academics/pages/SeatingArrangementPage";
 import HallTicket from "../features/academics/pages/HallTicket";
+import OnlineTests from "../features/academics/pages/OnlineTests";
+import TakeOnlineTest from "../features/academics/pages/TakeOnlineTest";
+import MarksEntryPage from "../features/academics/pages/MarksEntryPage";
 import Messages from "../features/messaging/pages/Messages";
 import PTMSlots from "../features/ptm/pages/PTMSlots";
 import ChainDashboard from "../features/chain/pages/ChainDashboard";
@@ -106,6 +109,9 @@ const AppRoutes = () => {
             <Route path="academics/exam-rooms" element={<ExamRooms />} />
             <Route path="academics/seating-arrangements" element={<SeatingArrangementPage />} />
             <Route path="academics/hall-ticket" element={<HallTicket />} />
+            <Route path="academics/online-tests" element={<OnlineTests />} />
+            <Route path="academics/online-tests/:sessionId" element={<TakeOnlineTest />} />
+            <Route path="academics/marks-entry" element={<MarksEntryPage />} />
             <Route path="messages" element={<Messages />} />
             <Route path="ptm" element={<PTMSlots />} />
             <Route path="chain-dashboard" element={<ChainDashboard />} />

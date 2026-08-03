@@ -1,10 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
-import { Download, Send } from "lucide-react";
+import { Download, Send, Sparkles, Plus, Trash2 } from "lucide-react";
 import Button from "../../../components/Button";
 import Table from "../../../components/Table";
 import SelectBox from "../../../components/SelectBox";
+import BlackInputField from "../../../components/BlackInputField";
+import Modal from "../../../components/Modal";
 import reportCardService from "../services/reportCardService";
+import reportCardCompetencyService from "../services/reportCardCompetencyService";
 import examTermService from "../services/examTermService";
 import classSectionService from "../../students/services/classSectionService";
 import useUser from "../../auth/hooks/useUser";
@@ -16,6 +19,18 @@ const STATUS_TONE = {
   draft: "bg-warning-tint text-warning-hex",
   published: "bg-success-tint text-success-hex",
 };
+
+const LEVEL_OPTIONS = [
+  { label: "Beginner", value: "beginner" },
+  { label: "Proficient", value: "proficient" },
+  { label: "Advanced", value: "advanced" },
+];
+const LEVEL_TONE = {
+  beginner: "bg-cn-bg text-ink-500",
+  proficient: "bg-warning-tint text-warning-hex",
+  advanced: "bg-success-tint text-success-hex",
+};
+const emptyCompetencyForm = { competency: "", level: "proficient", note: "" };
 
 const ReportCards = () => {
   const { user } = useUser();
@@ -38,6 +53,12 @@ const ReportCards = () => {
   const [loading, setLoading] = useState(false);
   const [downloadingId, setDownloadingId] = useState(null);
   const [publishing, setPublishing] = useState(false);
+
+  const [competencyRow, setCompetencyRow] = useState(null);
+  const [competencies, setCompetencies] = useState([]);
+  const [loadingCompetencies, setLoadingCompetencies] = useState(false);
+  const [competencyForm, setCompetencyForm] = useState(emptyCompetencyForm);
+  const [savingCompetency, setSavingCompetency] = useState(false);
 
   useEffect(() => {
     // Both the exam-terms and class-sections endpoints are Teacher+ only —
@@ -132,6 +153,54 @@ const ReportCards = () => {
     }
   };
 
+  const openCompetencies = async (row) => {
+    setCompetencyRow(row);
+    setCompetencyForm(emptyCompetencyForm);
+    setLoadingCompetencies(true);
+    try {
+      const res = await reportCardCompetencyService.getCompetencies(row.id);
+      setCompetencies(asList(res.data));
+    } catch (err) {
+      console.error("Failed to load competency tags:", err);
+      toast.error("Failed to load competency tags.");
+    } finally {
+      setLoadingCompetencies(false);
+    }
+  };
+
+  const handleAddCompetency = async () => {
+    if (!competencyForm.competency.trim()) {
+      toast.error("Enter a competency name (e.g. 'Collaboration').");
+      return;
+    }
+    setSavingCompetency(true);
+    try {
+      const res = await reportCardCompetencyService.createCompetency({
+        report_card: competencyRow.id,
+        competency: competencyForm.competency.trim(),
+        level: competencyForm.level,
+        note: competencyForm.note.trim(),
+      });
+      setCompetencies((prev) => [...prev, res.data]);
+      setCompetencyForm(emptyCompetencyForm);
+    } catch (err) {
+      console.error("Failed to add competency tag:", err);
+      toast.error(err?.response?.data?.non_field_errors?.[0] || "Failed to add competency tag (it may already exist on this report card).");
+    } finally {
+      setSavingCompetency(false);
+    }
+  };
+
+  const handleDeleteCompetency = async (competency) => {
+    try {
+      await reportCardCompetencyService.deleteCompetency(competency.id);
+      setCompetencies((prev) => prev.filter((c) => c.id !== competency.id));
+    } catch (err) {
+      console.error("Failed to remove competency tag:", err);
+      toast.error("Failed to remove competency tag.");
+    }
+  };
+
   const columns = [
     { header: "Student", accessor: (row) => row.student_name },
     { header: "Admission No.", accessor: (row) => row.admission_no },
@@ -151,15 +220,27 @@ const ReportCards = () => {
     {
       header: "Actions",
       accessor: (row) => (
-        <button
-          type="button"
-          onClick={() => handleDownload(row)}
-          disabled={downloadingId === row.id}
-          className="inline-flex items-center gap-1 text-[11.5px] font-bold text-violet-700 hover:underline cursor-pointer disabled:opacity-50"
-        >
-          <Download size={13} />
-          {downloadingId === row.id ? "Downloading…" : "Download PDF"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => handleDownload(row)}
+            disabled={downloadingId === row.id}
+            className="inline-flex items-center gap-1 text-[11.5px] font-bold text-violet-700 hover:underline cursor-pointer disabled:opacity-50"
+          >
+            <Download size={13} />
+            {downloadingId === row.id ? "Downloading…" : "Download PDF"}
+          </button>
+          {!isSelfView && (
+            <button
+              type="button"
+              onClick={() => openCompetencies(row)}
+              className="inline-flex items-center gap-1 text-[11.5px] font-bold text-violet-700 hover:underline cursor-pointer"
+            >
+              <Sparkles size={13} />
+              Competencies
+            </button>
+          )}
+        </div>
       ),
     },
   ];
@@ -192,6 +273,76 @@ const ReportCards = () => {
       </div>
 
       <Table columns={columns} data={cards} loading={loading} emptyMessage="No report cards found" />
+
+      <Modal
+        isOpen={!!competencyRow}
+        onClose={() => setCompetencyRow(null)}
+        title={competencyRow ? `NEP competency tags — ${competencyRow.student_name}` : ""}
+      >
+        <div className="flex flex-col gap-4 w-[480px] max-w-full">
+          <p className="text-[12.5px] text-ink-500">
+            360° co-scholastic tags alongside marks/rank — e.g. "Collaboration: Proficient". Shown to the guardian on this report card once published.
+          </p>
+
+          {loadingCompetencies ? (
+            <div className="text-ink-400 text-sm py-4 text-center">Loading…</div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {competencies.length === 0 && <div className="text-ink-400 text-[13px] py-2">No competency tags yet.</div>}
+              {competencies.map((c) => (
+                <div key={c.id} className="flex items-center justify-between gap-2 bg-cn-bg rounded-lg px-3 py-2">
+                  <div>
+                    <span className="font-semibold text-[13px] text-ink-900">{c.competency}</span>
+                    <span className={`ml-2 inline-flex items-center text-[10.5px] font-bold rounded-full px-2 py-0.5 ${LEVEL_TONE[c.level] || "bg-cn-bg text-ink-500"}`}>
+                      {c.level_display}
+                    </span>
+                    {c.note && <p className="text-[12px] text-ink-500 mt-0.5">{c.note}</p>}
+                  </div>
+                  <button type="button" onClick={() => handleDeleteCompetency(c)} className="text-error-hex hover:opacity-70 cursor-pointer shrink-0">
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="border-t border-cn-border pt-4 flex flex-col gap-3">
+            <div className="flex gap-3">
+              <BlackInputField
+                label="Competency"
+                fieldName="competency"
+                value={competencyForm.competency}
+                onChange={(e) => setCompetencyForm((p) => ({ ...p, competency: e.target.value }))}
+                placeholder="e.g. Critical Thinking"
+                className="flex-1"
+              />
+              <SelectBox
+                label="Level"
+                fieldName="level"
+                value={competencyForm.level}
+                onChange={(e) => setCompetencyForm((p) => ({ ...p, level: e.target.value }))}
+                options={LEVEL_OPTIONS}
+                className="w-40"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-dark">Note (optional)</label>
+              <textarea
+                rows={2}
+                value={competencyForm.note}
+                onChange={(e) => setCompetencyForm((p) => ({ ...p, note: e.target.value }))}
+                placeholder="Optional qualitative observation"
+                className="w-full px-4 py-2 border border-slate-300 rounded-md bg-transparent text-[0.85rem] text-dark outline-none focus:border-violet-500"
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button variant="primary" icon={<Plus size={15} />} onClick={handleAddCompetency} loading={savingCompetency}>
+                Add tag
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
